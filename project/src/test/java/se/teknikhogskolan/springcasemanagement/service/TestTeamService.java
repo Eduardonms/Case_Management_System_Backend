@@ -1,14 +1,14 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Before;
@@ -86,7 +86,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursGettingTeamById() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not find team with id: %d", teamId));
+        thrown.expectMessage(String.format("Cannot find Team with id '%d'.", teamId));
         doThrow(dataAccessException).when(teamRepository).findOne(teamId);
         teamService.getById(teamId);
     }
@@ -110,7 +110,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursGettingTeamByName() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not get team with name: %s", team.getName()));
+        thrown.expectMessage(String.format("Cannot get Team with name '%s'.", team.getName()));
         doThrow(dataAccessException).when(teamRepository).findByName(team.getName());
         teamService.getByName(team.getName());
     }
@@ -123,8 +123,8 @@ public final class TestTeamService {
 
     @Test
     public void shouldThrowInvalidInputExceptionExceptionWhenCreatingTeamWithAnAlreadyExistingName() {
-        thrown.expect(InvalidInputException.class);
-        thrown.expectMessage(String.format("Team wit name '%s' already exist", team.getName()));
+        thrown.expect(NotAllowedException.class);
+        thrown.expectMessage(String.format("Team with name '%s' already exist.", team.getName()));
         doThrow(DuplicateKeyException.class).when(teamRepository).save(team);
         teamService.create(team.getName());
     }
@@ -132,7 +132,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursWhenCreatingTeam() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not create team with name: %s", team.getName()));
+        thrown.expectMessage(String.format("Cannot create Team with name '%s'.", team.getName()));
         doThrow(dataAccessException).when(teamRepository).save(team);
         teamService.create(team.getName());
     }
@@ -150,10 +150,9 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowForbiddenOperationExceptionIfTeamIsInactiveWhenUpdatingName() {
+    public void shouldThrowNotAllowedExceptionIfTeamIsInactiveWhenUpdatingName() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("Could not update "
-                + "name on team with id '%d' since it's inactive.", teamId));
+        thrown.expectMessage(String.format("Cannot update name on Team with id '%d' since it's inactive.", teamId));
         String newName = "New name";
         when(teamRepository.findOne(teamId)).thenReturn(teamInDb);
         teamInDb.setActive(false);
@@ -173,7 +172,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursWhenUpdatingTeamName() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not update name on team with id: %d", teamId));
+        thrown.expectMessage(String.format("Cannot update name on Team with id '%d'.", teamId));
         String newName = "New name";
         when(teamRepository.findOne(teamId)).thenReturn(teamInDb);
         doThrow(dataAccessException).when(teamRepository).save(teamInDb);
@@ -192,8 +191,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNoSearchResultExceptionWhenTryingToInactivateANonExistingTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("Failed to inactivate team with id '%d'"
-                + " since it could not be found in the database", teamId));
+        thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
         teamService.inactivateTeam(teamId);
     }
@@ -201,7 +199,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfAnErrorOccursWhenInactivatingOnATeam() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not inactivate team with id: %d", teamId));
+        thrown.expectMessage(String.format("Cannot inactivate Team with id '%d'.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(teamInDb);
         doThrow(dataAccessException).when(teamRepository).save(teamInDb);
         teamService.inactivateTeam(teamId);
@@ -221,8 +219,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNoSearchResultExceptionWhenTryingToActivateANonExistingTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("Failed to activate team with id '%d'"
-                + " since it could not be found in the database", teamId));
+        thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
         teamService.activateTeam(teamId);
     }
@@ -230,7 +227,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfAnErrorOccursWhenActivatingOnATeam() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not activate team with id: %d", teamId));
+        thrown.expectMessage(String.format("Cannot activate Team with id '%d'.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(teamInDb);
         doThrow(dataAccessException).when(teamRepository).save(teamInDb);
         teamService.activateTeam(teamId);
@@ -244,17 +241,30 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenThereAreNoTeams() {
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No teams were found in the database");
-        when(teamRepository.findAll()).thenReturn(null);
-        teamService.getAll();
+    public void shouldReturnEmptyIterableWhenThereAreNoTeams() {
+        when(teamRepository.findAll()).thenReturn(createEmptyIterable());
+        Iterable<Team> teams = teamService.getAll();
+        if (teams.iterator().hasNext()) fail();
+    }
+
+    private Iterable<Team> createEmptyIterable() {
+        return () -> new Iterator<Team>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public Team next() {
+                return null;
+            }
+        };
     }
 
     @Test
     public void shouldThrowDatabaseExceptionIfAnErrorOccursWhenGettingAllTeams() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage("Could not get all teams");
+        thrown.expectMessage("Cannot get all Teams.");
         doThrow(dataAccessException).when(teamRepository).findAll();
         teamService.getAll();
     }
@@ -270,7 +280,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowMaximumQuantityExceptionIfTeamIsFullWhenAddingUserToTeam() {
         thrown.expect(MaximumQuantityException.class);
-        thrown.expectMessage(String.format("Team with id '%d' already contains 10 users", teamId));
+        thrown.expectMessage(String.format("Team with id '%d' already have max amount of 10 allowed Users.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(mockedTeam);
         when(userRepository.findOne(userId)).thenReturn(user);
         when(mockedTeam.isActive()).thenReturn(true);
@@ -282,7 +292,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNoSearchResultExceptionIfUserIdIsNullWhenAddingUserToTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("User with id '%d' did not exist.", userId));
+        thrown.expectMessage(String.format("No User with id '%d' exist.", userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(null);
         teamService.addUserToTeam(teamId, userId);
@@ -291,17 +301,17 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNoSearchResultExceptionIfTeamIdIsNullWhenAddingUserToTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("Team with id '%d' did not exist.", teamId));
+        thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
         when(userRepository.findOne(userId)).thenReturn(user);
         teamService.addUserToTeam(teamId, userId);
     }
 
     @Test
-    public void shouldThrowForbiddenOperationExceptionIfUserIsInactiveWhenAddingUserToTeam() {
+    public void shouldThrowNotAllowedExceptionIfUserIsInactiveWhenAddingUserToTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("User with id '%d' or Team with id '%d' is inactive",
-                userId, teamId));
+        thrown.expectMessage(String.format("Adding inactive User to Team is not allowed. User with id '%d' is inactive.",
+                userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         user.setActive(false);
@@ -309,10 +319,10 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowForbiddenOperationExceptionIfTeamIsInactiveWhenAddingUserToTeam() {
+    public void shouldThrowNotAllowedExceptionIfTeamIsInactiveWhenAddingUserToTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("User with id '%d' or Team with id '%d' is inactive",
-                userId, teamId));
+        thrown.expectMessage(String.format("Adding User to inactive Team is not allowed. Team with id '5' is inactive.",
+                team.getId()));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         team.setActive(false);
@@ -322,7 +332,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursWhenAddingUserToTeam() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not add user with id '%d' to team with id '%d'", userId, teamId));
+        thrown.expectMessage(String.format("Cannot add User with id '%d' to Team with id '%d'.", userId, teamId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         doThrow(dataAccessException).when(userRepository).save(user);
@@ -341,25 +351,25 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNoSearchResultExceptionIfUserIdIsNullWhenRemovingUserToTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("User with id '%d' did not exist.", userId));
+        thrown.expectMessage(String.format("No User with id '%d' exist.", userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(null);
         teamService.removeUserFromTeam(teamId, userId);
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionIfTeamIdIsNullWhenRemovingUserToTeam() {
+    public void shouldThrowNoSearchResultExceptionIfTeamIdIsNullWhenRemovingUserFromTeam() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage(String.format("Team with id '%d' did not exist.", teamId));
+        thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
         when(userRepository.findOne(userId)).thenReturn(user);
         teamService.removeUserFromTeam(teamId, userId);
     }
 
     @Test
-    public void shouldThrowForbiddenOperationExceptionIfUserIsInactiveWhenRemovingUserToTeam() {
+    public void shouldThrowNotAllowedExceptionIfUserIsInactiveWhenRemovingUserToTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("User with id '%d' or Team with id '%d' is inactive", userId, teamId));
+        thrown.expectMessage(String.format("Removing inactive User from Team is not allowed. User with id '1' is inactive.", userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         user.setActive(false);
@@ -367,9 +377,10 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowForbiddenOperationExceptionIfTeamIsInactiveWhenRemovingUserToTeam() {
+    public void shouldThrowNotAllowedExceptionIfTeamIsInactiveWhenRemovingUserFromTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("User with id '%d' or Team with id '%d' is inactive", userId, teamId));
+        thrown.expectMessage(String.format(
+                "Removing User from inactive Team is not allowed. Team with id '1' is inactive.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         team.setActive(false);
@@ -379,7 +390,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursWhenRemovingUserToTeam() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not remove user with id '%d' to team with id '%d'", userId, teamId));
+        thrown.expectMessage(String.format("Cannot remove User with id '%d' from Team with id '%d'.", userId, teamId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         doThrow(dataAccessException).when(userRepository).save(user);
@@ -389,7 +400,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowDatabaseExceptionIfErrorOccursWhenFindingUser() {
         thrown.expect(DatabaseException.class);
-        thrown.expectMessage(String.format("Could not find user with id: %d", userId));
+        thrown.expectMessage(String.format("Cannot find User with id '%d'.", userId));
         doThrow(dataAccessException).when(userRepository).findOne(userId);
         teamService.removeUserFromTeam(teamId, userId);
     }
