@@ -53,7 +53,7 @@ public class TestWorkItemIntegration {
     public void duplicateKeysShouldThrowException() {
         final String description = "duplicate description";
         exception.expect(NotAllowedException.class);
-        exception.expectMessage(String.format("Cannot save WorkItem. Description '%s' violates data integrity.", description));
+        exception.expectMessage(String.format("WorkItem with description '%s' already exist.", description));
         workItemService.create(description);
         workItemService.create(description);
     }
@@ -113,7 +113,7 @@ public class TestWorkItemIntegration {
     @Test
     public void addingWorkItemToUserWithFiveWorkItemsShouldThrowException() {
         exception.expect(MaximumQuantityException.class);
-        exception.expectMessage("User already have maximum amount of WorkItems");
+        exception.expectMessage(String.format("User already have max amount of 5 WorkItems allowed per User."));
         Long workItemIdWithoutUser = 8658766L;
         Long usernumberWithFiveWorkItems = 20002L;
         workItemService.setUser(usernumberWithFiveWorkItems, workItemIdWithoutUser);

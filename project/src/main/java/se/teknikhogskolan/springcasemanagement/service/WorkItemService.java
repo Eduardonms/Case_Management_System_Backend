@@ -48,26 +48,28 @@ public class WorkItemService {
             return workItemRepository.save(workItem);
         } catch (DataIntegrityViolationException e) {
             throw new NotAllowedException(String.format(
-                    "Cannot save WorkItem. Description '%s' violates data integrity.",
+                    "WorkItem with description '%s' already exist.",
                     workItem.getDescription(), e));
         } catch (DataAccessException e) {
             throw new DatabaseException(
-                    String.format("Cannot save WorkItem with description '%s'", workItem.getDescription(), e));
+                    String.format("Cannot save WorkItem with description '%s'.", workItem.getDescription(), e));
         }
     }
 
     public WorkItem getById(Long workItemId) {
-        WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)) throw new NotFoundException(String.format("Cannot find WorkItem with id '%d'.", workItemId));
-        return workItem;
+        return getWorkItemById(workItemId);
     }
 
     private WorkItem getWorkItemById(Long workItemId) {
+        WorkItem workItem;
         try {
-            return workItemRepository.findOne(workItemId);
+            workItem = workItemRepository.findOne(workItemId);
         } catch (DataAccessException e) {
             throw new DatabaseException(String.format("Cannot get WorkItem with id '%d'.", workItemId));
         }
+        if (null == workItem) throw new NotFoundException(String.format("No WorkItem with id '%d' exist.", workItemId))
+                .setMissingEntity(WorkItem.class);
+        return workItem;
     }
 
     public List<WorkItem> getCompletedWorkItems(LocalDate from, LocalDate to) {
@@ -97,7 +99,7 @@ public class WorkItemService {
         try {
             return issueRepository.save(new Issue(description));
         } catch (DataIntegrityViolationException e) {
-            throw new NotAllowedException(String.format("Issue with description '%s' violates data integrity.", description, e));
+            throw new NotAllowedException(String.format("Issue with description '%s' already exist.", description, e));
         } catch (DataAccessException e) {
             throw new DatabaseException(String.format("Cannot create Issue with description '%s'.", description), e);
         }
@@ -105,10 +107,8 @@ public class WorkItemService {
 
     public WorkItem addIssueToWorkItem(Long issueId, Long workItemId) {
         WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)) throw new NotFoundException(String.format("No WorkItem with id '%d' exists.", workItemId))
-                .setMissingEntity(WorkItem.class);
         Issue issue = getIssueById(issueId);
-        if (nullOrEmpty(issue)) throw new NotFoundException(String.format("No Issue with id '%d' exists.", issueId))
+        if (nullOrEmpty(issue)) throw new NotFoundException(String.format("No Issue with id '%d' exist.", issueId))
                 .setMissingEntity(Issue.class);
         return add(issue, workItem);
     }
@@ -136,8 +136,6 @@ public class WorkItemService {
     @Transactional
     public WorkItem removeIssueFromWorkItem(Long workItemId) {
         WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)) throw new NotFoundException(String.format("No WorkItem with id '%d'.", workItemId))
-                .setMissingEntity(WorkItem.class);
         return removeIssueFrom(workItem);
     }
 
@@ -184,9 +182,6 @@ public class WorkItemService {
 
     public WorkItem setStatus(Long workItemId, WorkItem.Status status) {
         WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)){
-            throw new NotFoundException(String.format("No WorkItem with id '%d'.", workItemId));
-        }
 
         workItem.setStatus(status);
         if (status.equals(DONE)) {
@@ -206,7 +201,6 @@ public class WorkItemService {
 
     public WorkItem removeById(Long workItemId) {
         WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)) throw new NotFoundException(String.format("No WorkItem with id '%d'", workItemId));
         return delete(workItem);
     }
 
@@ -253,14 +247,14 @@ public class WorkItemService {
 
     public WorkItem setUser(Long userNumber, Long workItemId) {
         WorkItem workItem = getWorkItemById(workItemId);
-        if (nullOrEmpty(workItem)) throw new NotFoundException(String.format("No WorkItem with id '%d'", workItemId))
-                .setMissingEntity(WorkItem.class);
 
         User user = getUserByUsernumber(userNumber);
         if (nullOrEmpty(user)) throw new NotFoundException(String.format("No User with usernumber '%d'.", userNumber))
                 .setMissingEntity(User.class);
         if (notActive(user)) throw new NotAllowedException(String.format("User with usernumber '%d' is inactive. Only active User can be assigned to WorkItem", userNumber));
-        if (userReachedWorkItemLimit(user)) throw new MaximumQuantityException("User already have maximum amount of WorkItems");
+        final int maxAllowedWorkItemsPerUser = 5;
+        if (userReachedWorkItemLimit(user, maxAllowedWorkItemsPerUser)) throw new MaximumQuantityException(
+                String.format("User already have max amount of %d WorkItems allowed per User.", maxAllowedWorkItemsPerUser));
 
         workItem.setUser(user);
         return saveWorkItem(workItem);
@@ -278,9 +272,8 @@ public class WorkItemService {
         return !user.isActive();
     }
 
-    private boolean userReachedWorkItemLimit(User user) {
+    private boolean userReachedWorkItemLimit(User user, int maxAllowedWorkItemsPerUser) {
         Collection<WorkItem> workItemsToThisUser = workItemRepository.findByUserId(user.getId());
-        final int maxAllowedWorkItemsPerUser = 5;
         if (null == workItemsToThisUser || workItemsToThisUser.size() < maxAllowedWorkItemsPerUser){
             return false;
         }
