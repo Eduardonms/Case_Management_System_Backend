@@ -1,12 +1,15 @@
 package se.teknikhogskolan.springcasemanagement.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.hsqldb.types.Collation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -65,7 +68,12 @@ public final class TestTeamRepository {
         });
         Iterable<Team> teamsFromDb = executeMultiple(CrudRepository::findAll);
 
-        assertEquals(teamsInDb, teamsFromDb);
+        Collection<Team> result = new ArrayList<>();
+        teamsFromDb.forEach(t -> result.add(t));
+
+        teamsInDb.forEach(t -> {
+            if (!result.contains(t)) fail();
+        });
         deleteTeams(teamsInDb);
     }
 
