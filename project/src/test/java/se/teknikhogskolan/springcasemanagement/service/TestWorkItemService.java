@@ -172,7 +172,7 @@ public final class TestWorkItemService {
     @Test
     public void settingUserWithFiveWorkItemToSixthWorkItemShouldThrowException() {
         exception.expect(MaximumQuantityException.class);
-        exception.expectMessage("User already have maximum amount of WorkItems");
+        exception.expectMessage("User already have max amount of 5 WorkItems allowed per User.");
         when(userRepository.findByUserNumber(userNumber)).thenReturn(user);
         when(user.isActive()).thenReturn(true);
         when(user.getId()).thenReturn(userId);
@@ -350,7 +350,7 @@ public final class TestWorkItemService {
     @Test
     public void addingNotFoundIssueToWorkItemShouldThrowException() {
         exception.expect(NotFoundException.class);
-        exception.expectMessage(String.format("No Issue with id '%d' exists.", issueId));
+        exception.expectMessage(String.format("No Issue with id '%d' exist.", issueId));
         when(workItemRepository.findOne(workItemId)).thenReturn(workItem);
         when(issueRepository.findOne(issueId)).thenReturn(null);
         workItemService.addIssueToWorkItem(issueId, workItemId);
@@ -359,7 +359,7 @@ public final class TestWorkItemService {
     @Test
     public void addingIssueNotFoundToWorkItemShouldThrowException() {
         exception.expect(NotFoundException.class);
-        exception.expectMessage(String.format("No WorkItem with id '%d' exists.", workItemId));
+        exception.expectMessage(String.format("No WorkItem with id '%d' exist.", workItemId));
         when(issueRepository.findOne(issueId)).thenReturn(issue);
         when(workItemRepository.findOne(workItemId)).thenReturn(null);
         workItemService.addIssueToWorkItem(issueId, workItemId);
