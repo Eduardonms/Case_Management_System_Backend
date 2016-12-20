@@ -107,6 +107,8 @@ public class WorkItemService {
 
     public WorkItem addIssueToWorkItem(Long issueId, Long workItemId) {
         WorkItem workItem = getWorkItemById(workItemId);
+        if (null != workItem.getIssue()) throw new NotAllowedException(String.format(
+                "WorkItem with id '%d' already have Issue. Remove existing Issue to make place for new Issue.", workItemId));
         Issue issue = getIssueById(issueId);
         if (nullOrEmpty(issue)) throw new NotFoundException(String.format("No Issue with id '%d' exist.", issueId))
                 .setMissingEntity(Issue.class);
