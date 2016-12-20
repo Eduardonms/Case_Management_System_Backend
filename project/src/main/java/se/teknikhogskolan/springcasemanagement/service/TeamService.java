@@ -28,7 +28,19 @@ public class TeamService {
     }
 
     public Team getById(Long teamId) {
-        return findTeam(teamId, String.format("Team with id '%d' do not exist", teamId));
+        return findTeam(teamId);
+    }
+
+    private Team findTeam(Long teamId) {
+        Team team;
+        try {
+            team = teamRepository.findOne(teamId);
+        } catch (DataAccessException e) {
+            throw new DatabaseException(String.format("Cannot find Team with id '%d'.", teamId), e);
+        }
+        if (null == team) throw new NotFoundException(String.format("Team with id '%d' do not exist.", teamId))
+                .setMissingEntity(Team.class);
+        return team;
     }
 
     public Team getByName(String teamName) {
@@ -36,106 +48,95 @@ public class TeamService {
         try {
             team = teamRepository.findByName(teamName);
         } catch (DataAccessException e) {
-            throw new DatabaseException(String.format("Could not get team with name: %s", teamName), e);
+            throw new DatabaseException(String.format("Cannot get Team with name '%s'.", teamName), e);
         }
-
-        if (team != null) {
-            return team;
-        } else {
-            throw new NotFoundException(String.format("Team with name '%s' do not exist", teamName));
-        }
+        if (null == team) throw new NotFoundException(String.format("Team with name '%s' do not exist.", teamName));
+        return team;
     }
 
     public Team create(String teamName) {
-        Team team = new Team(teamName);
-        try {
-            return teamRepository.save(team);
-        } catch (DataIntegrityViolationException e) {
-            throw new InvalidInputException(String.format("Team wit name '%s' already exist", teamName), e);
-        } catch (DataAccessException e) {
-            throw new DatabaseException(String.format("Could not create team with name: %s", teamName));
-        }
-    }
-
-    public Team updateName(Long teamId, String teamName) {
-        Team team = findTeam(teamId, String.format("Team with id '%d' do not exist.", teamId));
-        if (team.isActive()) {
-            team.setName(teamName);
-            return saveTeam(team, String.format("Could not update name on team with id: %d", teamId));
-        } else {
-            throw new NotAllowedException(String.format("Could not update "
-                    + "name on team with id '%d' since it's inactive.", teamId));
-        }
-    }
-
-    public Team activateTeam(Long teamId) {
-        Team team = findTeam(teamId, String.format("Failed to activate team with id '%d'"
-                + " since it could not be found in the database", teamId));
-        team.setActive(true);
-        return saveTeam(team, String.format("Could not activate team with id: %d", teamId));
-    }
-
-    public Team inactivateTeam(Long teamId) {
-        Team team = findTeam(teamId, String.format("Failed to inactivate team with id '%d'"
-                + " since it could not be found in the database", teamId));
-        team.setActive(false);
-        return saveTeam(team, String.format("Could not inactivate team with id: %d", teamId));
-    }
-
-    public Iterable<Team> getAll() {
-        Iterable<Team> teams;
-        try {
-            teams = teamRepository.findAll();
-        } catch (DataAccessException e) {
-            throw new DatabaseException("Could not get all teams", e);
-        }
-
-        if (teams != null) {
-            return teams;
-        } else {
-            throw new NotFoundException("No teams were found in the database");
-        }
-    }
-
-    public Team addUserToTeam(Long teamId, Long userId) {
-        User user = findUser(userId, String.format("User with id '%d' did not exist.", userId));
-        Team team = findTeam(teamId, String.format("Team with id '%d' did not exist.", teamId));
-
-        if (user.isActive() && team.isActive()) {
-            if (team.getUsers().size() < 10) {
-                user.setTeam(team);
-                saveUser(user, String.format("Could not add user with id '%d' to team with id '%d'", userId, teamId));
-                return findTeam(teamId, String.format("Team with id '%d' did not exist.", teamId));
-            } else {
-                throw new MaximumQuantityException(String.format("Team with id '%d' already contains 10 users",
-                        teamId));
-            }
-        } else {
-            throw new NotAllowedException(String.format("User with id '%d' or Team with id '%d' is inactive",
-                    userId, teamId));
-        }
-    }
-
-    public Team removeUserFromTeam(Long teamId, Long userId) {
-        User user = findUser(userId, String.format("User with id '%d' did not exist.", userId));
-        Team team = findTeam(teamId, String.format("Team with id '%d' did not exist.", teamId));
-
-        if (user.isActive() && team.isActive()) {
-            user.setTeam(null);
-            saveUser(user, String.format("Could not remove user with id '%d' to team with id '%d'", userId, teamId));
-            return findTeam(teamId, String.format("Team with id '%d' did not exist.", teamId));
-        } else {
-            throw new NotAllowedException(String.format("User with id '%d' or Team with id '%d' is inactive",
-                    userId, teamId));
-        }
+        String exceptionMessage = String.format("Cannot create Team with name '%s'.", teamName);
+        return saveTeam(new Team(teamName), exceptionMessage);
     }
 
     private Team saveTeam(Team team, String databaseExceptionMessage) {
         try {
             return teamRepository.save(team);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotAllowedException(String.format("Team with name '%s' already exist.", team.getName()), e);
         } catch (DataAccessException e) {
             throw new DatabaseException(databaseExceptionMessage, e);
         }
+    }
+
+    public Team updateName(Long teamId, String teamName) {
+        Team team = findTeam(teamId);
+        if (!team.isActive()) throw new NotAllowedException(String.format(
+                "Cannot update name on Team with id '%d' since it's inactive.", teamId));
+
+        team.setName(teamName);
+        String exceptionMessage = String.format("Cannot update name on Team with id '%d'.", teamId);
+        return saveTeam(team, exceptionMessage);
+    }
+
+    public Team activateTeam(Long teamId) {
+        Team team = findTeam(teamId);
+        return saveTeam(team.setActive(true), String.format("Cannot activate Team with id '%d'.", teamId));
+    }
+
+    public Team inactivateTeam(Long teamId) {
+        Team team = findTeam(teamId);
+        return saveTeam(team.setActive(false), String.format("Cannot inactivate Team with id '%d'.", teamId));
+    }
+
+    public Iterable<Team> getAll() {
+        try {
+            return teamRepository.findAll();
+        } catch (DataAccessException e) {
+            throw new DatabaseException("Cannot get all Teams.", e);
+        }
+    }
+
+    public Team addUserToTeam(Long teamId, Long userId) {
+        User user = findUser(userId);
+        if (!user.isActive()) throw new NotAllowedException(String.format(
+                "Adding inactive User to Team is not allowed. User with id '%d' is inactive.", userId));
+        Team team = findTeam(teamId);
+        if (!team.isActive()) throw new NotAllowedException(String.format(
+                "Adding User to inactive Team is not allowed. Team with id '%d' is inactive.", teamId));
+
+        int maxAllowedUsersInTeam = 10;
+        if (team.getUsers().size() >= maxAllowedUsersInTeam) throw new MaximumQuantityException(String.format(
+                "Team with id '%d' already have max amount of %d allowed Users.", teamId, maxAllowedUsersInTeam));
+
+        user.setTeam(team);
+        saveUser(user, String.format("Cannot add User with id '%d' to Team with id '%d'.", userId, teamId));
+        return findTeam(teamId);
+    }
+
+    private User findUser(Long userId) {
+        User user;
+        try {
+            user = userRepository.findOne(userId);
+        } catch (DataAccessException e) {
+            throw new DatabaseException(String.format("Cannot find User with id '%d'.", userId), e);
+        }
+        if (null == user) throw new NotFoundException(String.format("No User with id '%d' exist.", userId));
+        return user;
+    }
+
+    public Team removeUserFromTeam(Long teamId, Long userId) {
+        User user = findUser(userId);
+        if (!user.isActive()) throw new NotAllowedException(String.format(
+                "Removing inactive User from Team is not allowed. User with id '%d' is inactive.", userId));
+        Team team = findTeam(teamId);
+        if (!team.isActive()) throw new NotAllowedException(String.format(
+                "Removing User from inactive Team is not allowed. Team with id '%d' is inactive.", userId));
+
+        user.setTeam(null);
+        String exceptionMessage = String.format("Cannot remove User with id '%d' from Team with id '%d'.", userId, teamId);
+        saveUser(user, exceptionMessage);
+        return findTeam(teamId);
     }
 
     private User saveUser(User user, String databaseExceptionMessage) {
@@ -143,32 +144,6 @@ public class TeamService {
             return userRepository.save(user);
         } catch (DataAccessException e) {
             throw new DatabaseException(databaseExceptionMessage, e);
-        }
-    }
-
-    private Team findTeam(Long teamId, String noSearchResultExceptionMessage) {
-        try {
-            Team team = teamRepository.findOne(teamId);
-            if (team != null) {
-                return team;
-            } else {
-                throw new NotFoundException(noSearchResultExceptionMessage);
-            }
-        } catch (DataAccessException e) {
-            throw new DatabaseException(String.format("Could not find team with id: %d", teamId), e);
-        }
-    }
-
-    private User findUser(Long userId, String noSearchResultExceptionMessage) {
-        try {
-            User user = userRepository.findOne(userId);
-            if (user != null) {
-                return user;
-            } else {
-                throw new NotFoundException(noSearchResultExceptionMessage);
-            }
-        } catch (DataAccessException e) {
-            throw new DatabaseException(String.format("Could not find user with id: %d", userId), e);
         }
     }
 }
