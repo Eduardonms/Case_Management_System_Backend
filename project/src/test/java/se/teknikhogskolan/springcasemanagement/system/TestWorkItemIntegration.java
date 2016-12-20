@@ -30,10 +30,7 @@ import se.teknikhogskolan.springcasemanagement.config.h2.H2InfrastructureConfig;
 import se.teknikhogskolan.springcasemanagement.model.Issue;
 import se.teknikhogskolan.springcasemanagement.model.WorkItem;
 import se.teknikhogskolan.springcasemanagement.service.WorkItemService;
-import se.teknikhogskolan.springcasemanagement.service.exception.InvalidInputException;
-import se.teknikhogskolan.springcasemanagement.service.exception.MaximumQuantityException;
-import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundException;
-import se.teknikhogskolan.springcasemanagement.service.exception.ServiceException;
+import se.teknikhogskolan.springcasemanagement.service.exception.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { H2InfrastructureConfig.class })
@@ -55,8 +52,8 @@ public class TestWorkItemIntegration {
     @Test
     public void duplicateKeysShouldThrowException() {
         final String description = "duplicate description";
-        exception.expect(InvalidInputException.class);
-        exception.expectMessage(String.format("WorkItem with description '%s' violates data integrity", description));
+        exception.expect(NotAllowedException.class);
+        exception.expectMessage(String.format("Cannot save WorkItem. Description '%s' violates data integrity.", description));
         workItemService.create(description);
         workItemService.create(description);
     }
@@ -106,10 +103,10 @@ public class TestWorkItemIntegration {
 
     @Test
     public void addingWorkItemToInactiveUserShouldThrowException() {
-        exception.expect(InvalidInputException.class);
-        exception.expectMessage("User is inactive. Only active User can be assigned to WorkItem");
-        Long workItemIdWithoutUser = 8658766L;
+        exception.expect(NotAllowedException.class);
         Long inactiveUsernumber = 20001L;
+        exception.expectMessage("User with usernumber '" + inactiveUsernumber + "' is inactive. Only active User can be assigned to WorkItem");
+        Long workItemIdWithoutUser = 8658766L;
         workItemService.setUser(inactiveUsernumber, workItemIdWithoutUser);
     }
 
@@ -177,11 +174,11 @@ public class TestWorkItemIntegration {
     }
 
     @Test
-    public void canGetAllCreatedBetweenDatesNoMatchShouldThrowNoSearchResultException() {
-        exception.expect(NotFoundException.class);
-        LocalDate fromDate = LocalDate.parse("2016-11-01", formatter);
-        LocalDate toDate = LocalDate.parse("2016-11-02", formatter);
-        workItemService.getByCreatedBetweenDates(fromDate, toDate);
+    public void canGetAllCreatedBetweenDatesNoMatchShouldReturnEmptyList() {
+        LocalDate fromDate = LocalDate.parse("2100-11-01", formatter);
+        LocalDate toDate = LocalDate.parse("2100-11-02", formatter);
+        Collection<WorkItem> workItems = workItemService.getByCreatedBetweenDates(fromDate, toDate);
+        assertTrue(workItems.isEmpty());
     }
 
     @Test
@@ -204,17 +201,17 @@ public class TestWorkItemIntegration {
     }
 
     @Test
-    public void getWorkItemByDescriptionNoMatchShouldThrowNoSearchResultException() {
-        exception.expect(NotFoundException.class);
-        workItemService.getByDescriptionContains("8r347y8w%%%r78");
+    public void getWorkItemByDescriptionNoMatchShouldReturnEmptyList() {
+        Collection<WorkItem> workItems = workItemService.getByDescriptionContains("8r347y8w%%%r78");
+        assertTrue(workItems.isEmpty());
     }
 
     @Test
-    public void getByCreatedBetweenDatesShouldThrowNoSearchResultExceptionIfNoMatch() {
-        exception.expect(NotFoundException.class);
+    public void getByCreatedBetweenDatesWithoutMatchShouldReturnEmptyList() {
         LocalDate fromDate = LocalDate.now().plusDays(1);
         LocalDate toDate = LocalDate.now().plusDays(2);
-        workItemService.getByCreatedBetweenDates(fromDate, toDate);
+        Collection<WorkItem> workItems = workItemService.getByCreatedBetweenDates(fromDate, toDate);
+        assertTrue(workItems.isEmpty());
     }
 
     @Test
