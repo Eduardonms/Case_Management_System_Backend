@@ -1,6 +1,7 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Before;
@@ -48,6 +50,9 @@ public final class TestUserService {
     @InjectMocks
     private UserService userService;
 
+    @Mock
+    WorkItem mockedWorkItem;
+
     private User user;
     private List<User> users;
     private final DataAccessException dataAccessException = new RecoverableDataAccessException("Exception");
@@ -69,15 +74,15 @@ public final class TestUserService {
 
     @Test
     public void createUserTooShortUsername() {
-        thrown.expect(ServiceException.class);
-        thrown.expectMessage("Username too short");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Username 'Too short' is to short. Minimum length is 10 characters.");
         userService.create(user.getUserNumber(), "Too short", user.getFirstName(), user.getLastName());
     }
 
     @Test
     public void createUserThrowsDataAccessException() {
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to create user: " + user);
+        thrown.expectMessage("Cannot create User '" + user + "'.");
         doThrow(dataAccessException).when(userRepository).save(user);
         userService.create(user.getUserNumber(), user.getUsername(), user.getFirstName(), user.getLastName());
     }
@@ -92,7 +97,7 @@ public final class TestUserService {
     @Test
     public void getUserByIdThrowsServiceExceptionIfDataAccessException() {
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with id: 1");
+        thrown.expectMessage("Cannot get User with id '1'.");
         doThrow(dataAccessException).when(userRepository).findOne(1L);
         userService.getById(1L);
     }
@@ -100,7 +105,7 @@ public final class TestUserService {
     @Test
     public void getUserByIdThrowsNoSearchResultExceptionIfNoUserFound() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with id: 1 found");
+        thrown.expectMessage("No User with id '1' exist.");
         when(userRepository.findOne(1L)).thenReturn(null);
         userService.getById(1L);
     }
@@ -115,15 +120,15 @@ public final class TestUserService {
     @Test
     public void getUserByNumberThrowsServiceExceptionIfDataAccessException() {
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         userService.getByUserNumber(1L);
     }
 
     @Test
-    public void getUserByNumberThrowsNoSearchResultExceptionIfNoUserFound() {
+    public void getUserByNumberThrowsNotFoundExceptionIfNoUserFound() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         userService.getByUserNumber(1L);
     }
@@ -148,17 +153,17 @@ public final class TestUserService {
     }
 
     @Test
-    public void updateFirstNameThrowsNoSearchResultExceptionIfNoUserFound() {
+    public void updateFirstNameThrowsNotFoundExceptionIfNoUserFound() {
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         userService.updateFirstName(1L, "some name");
     }
 
     @Test
-    public void updateFirstNameThrowsServiceExceptionIfExceptionIsThrown() {
+    public void updateFirstNameThrowsNotFoundExceptionIfExceptionIsThrown() {
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         userService.updateFirstName(1L, "some name");
     }
@@ -183,10 +188,10 @@ public final class TestUserService {
     }
 
     @Test
-    public void updateLastNameThrowsNoSearchResultIfNoUserFound() {
+    public void updateLastNameThrowsNotFoundExceptionIfNoUserFound() {
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         userService.updateLastName(1L, "some name");
     }
 
@@ -194,7 +199,7 @@ public final class TestUserService {
     public void updateLastNameThrowsServiceExceptionIfExceptionIsThrown() {
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         userService.updateLastName(1L, "some name");
     }
 
@@ -220,8 +225,8 @@ public final class TestUserService {
     @Test
     public void updateUsernameTooShortUsernameThrowsServiceException() {
         when(userRepository.findByUserNumber(1L)).thenReturn(user);
-        thrown.expect(ServiceException.class);
-        thrown.expectMessage("Username too short");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Username 'Too short' is to short. Minimum length is 10 characters.");
         userService.updateUsername(1L, "Too short");
     }
 
@@ -229,7 +234,7 @@ public final class TestUserService {
     public void updateUsernameThrowsNoSearchResultExceptionIfNoUserFound() {
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         userService.updateUsername(1L, "some long enough name");
     }
 
@@ -237,7 +242,7 @@ public final class TestUserService {
     public void updateUsernameThrowsServiceExceptionIfExceptionIsThrown() {
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         userService.updateUsername(1L, "some long enough name");
     }
 
@@ -255,7 +260,7 @@ public final class TestUserService {
     public void activateUserThrowsNoSearchResultIfNoUserFound() {
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         userService.activate(1L);
     }
 
@@ -263,30 +268,20 @@ public final class TestUserService {
     public void activateUserThrowsServiceExcptionIfExceptionIsThrown() {
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         userService.activate(1L);
     }
 
     @Test
     public void inactivateUserSetsAllWorkItemsToUnstartedAndInactivatesUser() {
-        // Populate a list with some Started work items
         List<WorkItem> workItems = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            WorkItem workItem = new WorkItem("Some workItem");
-            workItem.setStatus(Status.STARTED);
-            workItems.add(workItem);
-        }
-
+        workItems.add(mockedWorkItem);
         when(userRepository.findByUserNumber(1L)).thenReturn(mockedUser);
         when(mockedUser.getWorkItems()).thenReturn(workItems);
+        when(mockedUser.setActive(false)).thenReturn(mockedUser);
         userService.inactivate(1L);
-        ArgumentCaptor<User> capturedUser = ArgumentCaptor.forClass(User.class);
-        verify(userRepository, times(1)).save(capturedUser.capture());
-
-        for (WorkItem workItem : capturedUser.getValue().getWorkItems()) {
-            assertEquals(Status.UNSTARTED, workItem.getStatus());
-        }
-        assertEquals(false, capturedUser.getValue().isActive());
+        verify(mockedWorkItem).setStatus(Status.UNSTARTED);
+        verify(userRepository).save(mockedUser);
     }
 
     @Test
@@ -299,10 +294,10 @@ public final class TestUserService {
     }
 
     @Test
-    public void inactivateUserThrowsNoSearchResultExceptionIfNoUserFound() {
+    public void inactivateUserThrowsNotFoundExceptionIfNoUserFound() {
         when(userRepository.findByUserNumber(1L)).thenReturn(null);
         thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No user with user number: 1 found");
+        thrown.expectMessage("No User with usernumber '1' exist.");
         userService.inactivate(1L);
     }
 
@@ -310,7 +305,7 @@ public final class TestUserService {
     public void inactivateUserThrowsServiceExceptionIfExceptionIsThrown() {
         doThrow(dataAccessException).when(userRepository).findByUserNumber(1L);
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get user with user number: 1");
+        thrown.expectMessage("Cannot get User with usernumber '1'.");
         userService.inactivate(1L);
     }
 
@@ -323,26 +318,24 @@ public final class TestUserService {
     }
 
     @Test
-    public void getAllByTeamIdThrowsNoSearchResultExceptionIfEmptyListReturned() {
+    public void getAllByTeamIdWithNoMatchShouldReturnEmptyList() {
         when(userRepository.findByTeamId(1L)).thenReturn(new ArrayList<>());
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users with team id: 1 found");
-        userService.getAllByTeamId(1L);
+        Collection<User> users = userService.getAllByTeamId(1L);
+        assertTrue(users.isEmpty());
     }
 
     @Test
-    public void getAllByTeamIdThrowsNoSearchResultExceptionIfNullReturned() {
+    public void getAllByTeamIdReturnsEmptyListIfNullReturned() {
         when(userRepository.findByTeamId(1L)).thenReturn(null);
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users with team id: 1 found");
-        userService.getAllByTeamId(1L);
+        Collection<User> users = userService.getAllByTeamId(1L);
+        assertTrue(users.isEmpty());
     }
 
     @Test
     public void getAllByTeamIdThrowsServiceExceptionIfExceptionThrown() {
         doThrow(dataAccessException).when(userRepository).findByTeamId(1L);
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get all users with team id: 1");
+        thrown.expectMessage("Cannot get all Users with Team id '1'.");
         userService.getAllByTeamId(1L);
     }
 
@@ -358,21 +351,17 @@ public final class TestUserService {
     }
 
     @Test
-    public void searchUsersThrowsNoSearchResultExceptionIfEmptyListReturned() {
-        when(userRepository.searchUsers("first", "last",
-                "user")).thenReturn(new ArrayList<>());
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users fulfilling criteria: firstName = first, lastName = last, username = user");
-        userService.search("first", "last", "user");
+    public void searchResultsAsEmptyListReturnsEmptyList() {
+        when(userRepository.searchUsers("first", "last", "user")).thenReturn(new ArrayList<>());
+        Collection<User> users = userService.search("first", "last", "user");
+        assertTrue(users.isEmpty());
     }
 
     @Test
-    public void searchUsersThrowsNoSearchResultExceptionIfNullReturned() {
-        when(userRepository.searchUsers("first", "last",
-                "user")).thenReturn(null);
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users fulfilling criteria: firstName = first, lastName = last, username = user");
-        userService.search("first", "last", "user");
+    public void searchResultsInNullReturnsEmptyList() {
+        when(userRepository.searchUsers("first", "last", "user")).thenReturn(null);
+        Collection<User> users = userService.search("first", "last", "user");
+        assertTrue(users.isEmpty());
     }
 
     @Test
@@ -380,7 +369,7 @@ public final class TestUserService {
         doThrow(dataAccessException).when(userRepository)
                 .searchUsers("first", "last", "user");
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get users with criteria: firstName = first, lastName = last, username = user");
+        thrown.expectMessage("Cannot get Users by criteria: first name = first, last name = last, username = user.");
         userService.search("first", "last", "user");
     }
 
@@ -397,16 +386,15 @@ public final class TestUserService {
     public void getAllByPageThrowsServiceExceptionIfExceptionThrown() {
         doThrow(dataAccessException).when(userRepository).findAll(new PageRequest(4, 10));
         thrown.expect(ServiceException.class);
-        thrown.expectMessage("Failed to get users by page");
+        thrown.expectMessage("Cannot get Users by page. Request was 'page 4, size 10'.");
         userService.getAllByPage(4, 10);
     }
 
     @Test
-    public void getAllByPageThrowsNoSearchResultExceptionIfNoUsersFound() {
+    public void getAllByPageReturnsNullIfNoUsersFound() {
         when(userRepository.findAll(new PageRequest(4, 10))).thenReturn(null);
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users on page: 4");
-        userService.getAllByPage(4, 10);
+        Page page = userService.getAllByPage(4, 10);
+        assertTrue(null == page);
     }
 
     @Test
@@ -421,31 +409,29 @@ public final class TestUserService {
 
     @Test
     public void getByCreationDateThrowsServiceExceptionIfExceptionThrown() {
-        LocalDate startDate = LocalDate.now();
+        LocalDate startDate = LocalDate.now().plusDays(1);
         LocalDate endDate = LocalDate.now().plusDays(3);
         doThrow(dataAccessException).when(userRepository).findByCreationDate(startDate, endDate);
         thrown.equals(ServiceException.class);
-        thrown.expectMessage("Failed to get users created between: " + startDate + " and " + endDate);
+        thrown.expectMessage("Cannot get Users created between " + startDate + " and " + endDate + ".");
         userService.getByCreationDate(startDate, endDate);
     }
 
     @Test
-    public void getByCreationDateThrowsNoSearchResultExceptionIfNullIsReturned() {
-        LocalDate startDate = LocalDate.now();
+    public void getByCreationDateReturnsEmptyListIfNullIsReturned() {
+        LocalDate startDate = LocalDate.now().plusDays(1);
         LocalDate endDate = LocalDate.now().plusDays(3);
         when(userRepository.findByCreationDate(startDate, endDate)).thenReturn(null);
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users created between: " + startDate + " and " + endDate);
-        userService.getByCreationDate(startDate, endDate);
+        Collection<User> users = userService.getByCreationDate(startDate, endDate);
+        assertTrue(users.isEmpty());
     }
 
     @Test
-    public void getByCreationDateThrowsNoSearchResultExceptionIfEmptyListIsReturned() {
-        LocalDate startDate = LocalDate.now();
+    public void getByCreationDateShouldReturnEmptyListWhenNoMatchFound() {
+        LocalDate startDate = LocalDate.now().plusDays(1);
         LocalDate endDate = LocalDate.now().plusDays(3);
         when(userRepository.findByCreationDate(startDate, endDate)).thenReturn(new ArrayList<>());
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("No users created between: " + startDate + " and " + endDate);
-        userService.getByCreationDate(startDate, endDate);
+        Collection<User> users = userService.getByCreationDate(startDate, endDate);
+        assertTrue(users.isEmpty());
     }
 }
