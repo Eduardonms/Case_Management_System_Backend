@@ -1,10 +1,12 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import se.teknikhogskolan.springcasemanagement.model.Issue;
@@ -27,78 +29,37 @@ public class IssueService {
     }
 
     public Issue getById(Long issueId) {
-        Issue issue = findIssue(issueId);
+        return findIssue(issueId);
+    }
 
-        if (issue != null) {
-            return issue;
-        } else
-            throw new NotFoundException("Issue with id '" + issueId + "' do not exist");
+    private Issue findIssue(Long issueId) {
+        Issue issue;
+        try {
+            issue = issueRepository.findOne(issueId);
+        } catch (DataAccessException e) {
+            throw new DatabaseException(String.format("Cannot get Issue with id '%d'.", issueId), e);
+        }
+        if (null == issue) throw new NotFoundException(String.format("No Issue with id '%d' exist.", issueId))
+                .setMissingEntity(Issue.class);
+        return issue;
     }
 
     public List<Issue> getByDescription(String description) {
-        List<Issue> issue;
         try {
-            issue = issueRepository.findByDescription(description);
+            List<Issue> issues;
+            issues = issueRepository.findByDescription(description);
+            return (null == issues) ? new ArrayList<>() : issues;
         } catch (DataAccessException e) {
-            throw new DatabaseException("Could not get issues with description: " + description, e);
+            throw new DatabaseException(String.format("Cannot get Issues with description '%s'.", description), e);
         }
-
-        if (issue != null) {
-            return issue;
-        } else
-            throw new NotFoundException("Issues with description '" + description + "' do not exist");
     }
 
     public Issue updateDescription(Long issueId, String description) {
         Issue issue = findIssue(issueId);
-        if (issue != null) {
-            if (issue.isActive()) {
-                issue.setDescription(description);
-                return saveIssue(issue, "Could not update description on issue with id: " + issueId);
-            } else {
-                throw new NotAllowedException("Could not update "
-                        + "description on Issue with id '" + issueId + "' since it's inactivate.");
-            }
-        } else {
-            throw new NotFoundException("Failed to update issue with id '"
-                    + issueId + "' since it could not be found in the database");
-        }
-    }
-
-    public Issue inactivate(Long issueId) {
-        Issue issue = findIssue(issueId);
-        if (issue != null) {
-            issue.setActive(false);
-            return saveIssue(issue, "Could not inactivate issue with id: " + issueId);
-        } else {
-            throw new NotFoundException("Failed to inactivate issue with id '"
-                    + issueId + "' since it could not be found in the database");
-        }
-    }
-
-    public Issue activate(Long issueId) {
-        Issue issue = findIssue(issueId);
-        if (issue != null) {
-            issue.setActive(true);
-            return saveIssue(issue, "Could not activate issue with id: " + issueId);
-        } else {
-            throw new NotFoundException("Failed to activate issue with id '"
-                    + issueId + "' since it could not be found in the database");
-        }
-    }
-
-    public Page<Issue> getAllByPage(int pageNumber, int pageSize) {
-        Page<Issue> page;
-        try {
-            page = pagingIssueRepository.findAll(new PageRequest(pageNumber, pageSize));
-        } catch (DataAccessException e) {
-            throw new DatabaseException("Could not get issues by page", e);
-        }
-
-        if (page != null) {
-            return page;
-        } else
-            throw new NotFoundException("No issues on page: " + pageNumber);
+        if (!issue.isActive()) throw new NotAllowedException(String.format(
+                "Updating description on inactive Issue is not allowed. Issue with id '%d' is inactive.", issueId));
+        issue.setDescription(description);
+        return saveIssue(issue, String.format("Cannot update description on Issue with id '%d'.", issueId));
     }
 
     private Issue saveIssue(Issue issue, String exceptionMessage) {
@@ -109,11 +70,22 @@ public class IssueService {
         }
     }
 
-    private Issue findIssue(Long issueId) {
+    public Issue inactivate(Long issueId) {
+        Issue issue = findIssue(issueId);
+        return saveIssue(issue.setActive(false), String.format("Cannot inactivate Issue with id '%d'.", issueId));
+    }
+
+    public Issue activate(Long issueId) {
+        Issue issue = findIssue(issueId);
+        return saveIssue(issue.setActive(true), String.format("Cannot activate Issue with id '%d'.", issueId));
+    }
+
+    public Page<Issue> getAllByPage(int pageNumber, int pageSize) {
         try {
-            return issueRepository.findOne(issueId);
+            return pagingIssueRepository.findAll(new PageRequest(pageNumber, pageSize));
         } catch (DataAccessException e) {
-            throw new DatabaseException("Could not find issue with id: " + issueId, e);
+            throw new DatabaseException(String.format("Cannot get Issues by page. Request was 'page %d, size %d'.",
+                    pageNumber, pageSize), e);
         }
     }
 }
