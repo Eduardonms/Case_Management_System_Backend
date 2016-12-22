@@ -91,8 +91,9 @@ public class User extends AbstractEntity {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public User setActive(boolean active) {
         this.active = active;
+        return this;
     }
 
     @Override
