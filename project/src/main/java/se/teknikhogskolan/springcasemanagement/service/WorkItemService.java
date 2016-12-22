@@ -83,16 +83,16 @@ public class WorkItemService {
     }
 
     public Piece<WorkItem> getAllByPiece(int pageNumber, int pageSize) {
-        Page page = getAllByPage(new PageRequest(pageNumber, pageSize));
+        Page page = getAllByPage(pageNumber, pageSize);
         return (null == page) ? null : new Piece<>(page);
     }
 
-    public Page<WorkItem> getAllByPage(PageRequest pageRequest) {
+    public Page<WorkItem> getAllByPage(int pageNumber, int pageSize) {
         try {
-            return workItemRepository.findAll(pageRequest);
+            return workItemRepository.findAll(new PageRequest(pageNumber, pageSize));
         } catch (DataAccessException e) {
-            throw new DatabaseException(String.format("Cannot get Page '%d' with size '%d'.",
-                    pageRequest.getPageNumber(), pageRequest.getPageSize()), e);
+            throw new DatabaseException(String.format("Cannot get WorkItems by page. Request was 'page %d, size %d'.",
+                    pageNumber, pageSize), e);
         }
     }
 
