@@ -343,8 +343,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNotAllowedExceptionIfTeamIsInactiveWhenAddingUserToTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("Adding User to inactive Team is not allowed. Team with id '5' is inactive.",
-                team.getId()));
+        thrown.expectMessage(String.format("Adding User to inactive Team is not allowed. Team with id '5' is inactive."));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         team.setActive(false);
@@ -391,7 +390,7 @@ public final class TestTeamService {
     @Test
     public void shouldThrowNotAllowedExceptionIfUserIsInactiveWhenRemovingUserToTeam() {
         thrown.expect(NotAllowedException.class);
-        thrown.expectMessage(String.format("Removing inactive User from Team is not allowed. User with id '1' is inactive.", userId));
+        thrown.expectMessage(String.format("Removing inactive User from Team is not allowed. User with id '1' is inactive."));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         user.setActive(false);
@@ -402,7 +401,7 @@ public final class TestTeamService {
     public void shouldThrowNotAllowedExceptionIfTeamIsInactiveWhenRemovingUserFromTeam() {
         thrown.expect(NotAllowedException.class);
         thrown.expectMessage(String.format(
-                "Removing User from inactive Team is not allowed. Team with id '1' is inactive.", teamId));
+                "Removing User from inactive Team is not allowed. Team with id '1' is inactive."));
         when(teamRepository.findOne(teamId)).thenReturn(team);
         when(userRepository.findOne(userId)).thenReturn(user);
         team.setActive(false);
