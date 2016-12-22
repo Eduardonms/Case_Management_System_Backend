@@ -121,7 +121,8 @@ public class TeamService {
         } catch (DataAccessException e) {
             throw new DatabaseException(String.format("Cannot find User with id '%d'.", userId), e);
         }
-        if (null == user) throw new NotFoundException(String.format("No User with id '%d' exist.", userId));
+        if (null == user) throw new NotFoundException(String.format("No User with id '%d' exist.", userId))
+                .setMissingEntity(User.class);
         return user;
     }
 

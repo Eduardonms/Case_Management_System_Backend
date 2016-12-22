@@ -76,7 +76,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenGettingTeamByIdThatDoNotExist() {
+    public void shouldThrowNotFoundExceptionWhenGettingTeamByIdThatDoNotExist() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
@@ -100,7 +100,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenGettingTeamByNameThatDoNotExist() {
+    public void shouldThrowNotFoundExceptionWhenGettingTeamByNameThatDoNotExist() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with name '%s' do not exist", team.getName()));
         when(teamRepository.findByName(team.getName())).thenReturn(null);
@@ -160,7 +160,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenUpdatingNameOnANonExistingTeam() {
+    public void shouldThrowNotFoundExceptionWhenUpdatingNameOnANonExistingTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         String newName = "New name";
@@ -189,7 +189,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenTryingToInactivateANonExistingTeam() {
+    public void shouldThrowNotFoundExceptionWhenTryingToInactivateANonExistingTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
@@ -217,7 +217,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionWhenTryingToActivateANonExistingTeam() {
+    public void shouldThrowNotFoundExceptionWhenTryingToActivateANonExistingTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
@@ -290,7 +290,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionIfUserIdIsNullWhenAddingUserToTeam() {
+    public void shouldThrowNotFoundExceptionIfUserIsNullWhenAddingUserToTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("No User with id '%d' exist.", userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
@@ -299,12 +299,34 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionIfTeamIdIsNullWhenAddingUserToTeam() {
+    public void exceptionShouldHoldMissingClassIfNoUserFoundWhenTryingToAddToTeam() {
+        when(teamRepository.findOne(teamId)).thenReturn(team);
+        when(userRepository.findOne(userId)).thenReturn(null);
+        try {
+            teamService.addUserToTeam(teamId, userId);
+        } catch (NotFoundException e) {
+            if (e.getMissingEntity() != User.class) fail();
+        }
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionIfTeamIsNullWhenAddingUserToTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
         when(userRepository.findOne(userId)).thenReturn(user);
         teamService.addUserToTeam(teamId, userId);
+    }
+
+    @Test
+    public void exceptionShouldHoldMissingClassIfNoTeamFoundWhenTryingToAddAUserToTeam() {
+        when(teamRepository.findOne(teamId)).thenReturn(null);
+        when(userRepository.findOne(userId)).thenReturn(user);
+        try {
+            teamService.addUserToTeam(teamId, userId);
+        } catch (NotFoundException e) {
+            if (e.getMissingEntity() != Team.class) fail();
+        }
     }
 
     @Test
@@ -349,7 +371,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionIfUserIdIsNullWhenRemovingUserToTeam() {
+    public void shouldThrowNotFoundExceptionIfUserIdIsNullWhenRemovingUserToTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("No User with id '%d' exist.", userId));
         when(teamRepository.findOne(teamId)).thenReturn(team);
@@ -358,7 +380,7 @@ public final class TestTeamService {
     }
 
     @Test
-    public void shouldThrowNoSearchResultExceptionIfTeamIdIsNullWhenRemovingUserFromTeam() {
+    public void shouldThrowNotFoundExceptionIfTeamIdIsNullWhenRemovingUserFromTeam() {
         thrown.expect(NotFoundException.class);
         thrown.expectMessage(String.format("Team with id '%d' do not exist.", teamId));
         when(teamRepository.findOne(teamId)).thenReturn(null);
