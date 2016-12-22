@@ -82,11 +82,12 @@ public class WorkItemService {
         return executeList(workItemRepository -> workItemRepository.findByCreationDate(fromDate, toDate), exceptionMessage);
     }
 
-    public Piece<WorkItem> getAllByPiece(int page, int pageSize) {
-        return new Piece<>(getAllByPage(new PageRequest(page, pageSize)));
+    public Piece<WorkItem> getAllByPiece(int pageNumber, int pageSize) {
+        Page page = getAllByPage(new PageRequest(pageNumber, pageSize));
+        return (null == page) ? null : new Piece<>(page);
     }
 
-    private Page<WorkItem> getAllByPage(PageRequest pageRequest) {
+    public Page<WorkItem> getAllByPage(PageRequest pageRequest) {
         try {
             return workItemRepository.findAll(pageRequest);
         } catch (DataAccessException e) {
