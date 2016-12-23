@@ -34,6 +34,10 @@ public class UserService {
         return saveUser(user, String.format("Cannot create User '%s'.", user.toString()));
     }
 
+    public boolean exists(Long userId) {
+        return userRepository.exists(userId);
+    }
+
     private boolean usernameToShort(String username) {
         return null == username || username.length() < minimumUsernameLength;
     }

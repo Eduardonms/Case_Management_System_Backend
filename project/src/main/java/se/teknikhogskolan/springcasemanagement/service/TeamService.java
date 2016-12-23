@@ -16,13 +16,31 @@ import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundExcepti
 @Service
 public class TeamService {
 
-    private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
 
     @Autowired
     public TeamService(TeamRepository teamRepository, UserRepository userRepository) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
+    }
+
+    public Team create(String teamName) {
+        String exceptionMessage = String.format("Cannot create Team with name '%s'.", teamName);
+        return saveTeam(new Team(teamName), exceptionMessage);
+    }
+    private Team saveTeam(Team team, String databaseExceptionMessage) {
+        try {
+            return teamRepository.save(team);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotAllowedException(String.format("Team with name '%s' already exist.", team.getName()), e);
+        } catch (DataAccessException e) {
+            throw new DatabaseException(databaseExceptionMessage, e);
+        }
+    }
+
+    public boolean exists(Long teamId) {
+        return teamRepository.exists(teamId);
     }
 
     public Team getById(Long teamId) {
@@ -50,21 +68,6 @@ public class TeamService {
         }
         if (null == team) throw new NotFoundException(String.format("Team with name '%s' do not exist.", teamName));
         return team;
-    }
-
-    public Team create(String teamName) {
-        String exceptionMessage = String.format("Cannot create Team with name '%s'.", teamName);
-        return saveTeam(new Team(teamName), exceptionMessage);
-    }
-
-    private Team saveTeam(Team team, String databaseExceptionMessage) {
-        try {
-            return teamRepository.save(team);
-        } catch (DataIntegrityViolationException e) {
-            throw new NotAllowedException(String.format("Team with name '%s' already exist.", team.getName()), e);
-        } catch (DataAccessException e) {
-            throw new DatabaseException(databaseExceptionMessage, e);
-        }
     }
 
     public Team updateName(Long teamId, String teamName) {

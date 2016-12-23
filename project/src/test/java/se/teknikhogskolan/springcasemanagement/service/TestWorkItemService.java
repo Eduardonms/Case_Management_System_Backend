@@ -1,8 +1,6 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,6 +80,13 @@ public final class TestWorkItemService {
         MockitoAnnotations.initMocks(this);
         workItemCollection.clear();
         workItemList.clear();
+    }
+
+    @Test
+    public void canCheckIfWorkItemExists() {
+        when(workItemRepository.exists(workItemId)).thenReturn(false);
+        boolean result = userRepository.exists(workItemId);
+        assertFalse(result);
     }
 
     @Test

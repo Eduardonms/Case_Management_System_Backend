@@ -41,6 +41,19 @@ public class TestIssueIntegration {
     }
 
     @Test
+    public void canCheckIfIssueExists() {
+        boolean result = issueService.exists(issueId);
+        assertTrue(result);
+    }
+
+    @Test
+    public void canCheckIfIssueNotExists() {
+        Long notPersistedIssueId = 4059823590825L;
+        boolean result = issueService.exists(notPersistedIssueId);
+        assertFalse(result);
+    }
+
+    @Test
     public void issueToString() {
         final String result = issueService.getById(issueId).toString();
         final String expectedToString = "Issue [id=1, description=Description, active=true, workItemId=null, created=2016-11-11, lastModified=null]";

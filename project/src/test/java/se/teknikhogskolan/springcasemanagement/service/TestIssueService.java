@@ -57,6 +57,13 @@ public final class TestIssueService {
     }
 
     @Test
+    public void canCheckIfIssueExists() {
+        when(issueRepository.exists(issueId)).thenReturn(true);
+        boolean result = issueService.exists(issueId);
+        assertTrue(result);
+    }
+
+    @Test
     public void canGetIssueById() {
         when(issueRepository.findOne(issueId)).thenReturn(issueInDb);
         Issue issueFromDb = issueService.getById(issueId);
