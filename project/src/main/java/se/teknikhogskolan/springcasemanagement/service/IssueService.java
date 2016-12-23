@@ -28,6 +28,10 @@ public class IssueService {
         this.pagingIssueRepository = pagingIssueRepository;
     }
 
+    public boolean exists(Long issueId) {
+        return issueRepository.exists(issueId);
+    }
+
     public Issue getById(Long issueId) {
         return findIssue(issueId);
     }

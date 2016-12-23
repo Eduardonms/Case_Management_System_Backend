@@ -64,6 +64,13 @@ public final class TestTeamService {
     }
 
     @Test
+    public void canCheckIfTeamExists() {
+        when(teamRepository.exists(teamId)).thenReturn(true);
+        boolean result = teamService.exists(teamId);
+        assertTrue(result);
+    }
+
+    @Test
     public void canGetTeamById() {
         when(teamRepository.findOne(teamId)).thenReturn(teamInDb);
         teamService.getById(teamId);

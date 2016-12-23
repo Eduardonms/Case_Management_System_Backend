@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import junit.framework.TestCase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +36,7 @@ import se.teknikhogskolan.springcasemanagement.service.exception.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { H2InfrastructureConfig.class })
 @SqlGroup({
-    @Sql(scripts = "add_workitem_data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD),
+    @Sql(scripts = "insert_workitem.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD),
     @Sql(scripts = "h2_clean_tables.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 })
 public class TestWorkItemIntegration {
@@ -48,6 +49,19 @@ public class TestWorkItemIntegration {
 
     private final Long workItemLeadTeamId = 98486464L;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @Test
+    public void canCheckIfWorkItemExists() {
+        boolean result = workItemService.exists(workItemLeadTeamId);
+        assertTrue(result);
+    }
+
+    @Test
+    public void canCheckIfWorkItemNotExists() {
+        Long notPersistedWorkItemId = 6546156131535L;
+        boolean result = workItemService.exists(notPersistedWorkItemId);
+        assertFalse(result);
+    }
 
     @Test
     public void duplicateKeysShouldThrowException() {

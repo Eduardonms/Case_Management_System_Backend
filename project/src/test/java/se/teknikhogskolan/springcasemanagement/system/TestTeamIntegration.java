@@ -44,6 +44,19 @@ public class TestTeamIntegration {
         this.teamId = 1L;
         this.userId = 1L;
     }
+
+    @Test
+    public void canCheckIfTeamExists() {
+        boolean result = teamService.exists(teamId);
+        assertTrue(result);
+    }
+
+    @Test
+    public void canCheckIfTeamNotExists() {
+        Long notPersistedTeamId = 23536345666436L;
+        boolean result = teamService.exists(notPersistedTeamId);
+        assertFalse(result);
+    }
     
     @Test
     public void teamToString() {

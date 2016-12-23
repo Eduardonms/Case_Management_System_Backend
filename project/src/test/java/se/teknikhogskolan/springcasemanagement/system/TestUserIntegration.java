@@ -1,5 +1,6 @@
 package se.teknikhogskolan.springcasemanagement.system;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -7,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,20 @@ public class TestUserIntegration {
     private final User vader = new User(2L, "I am your father", "Darth", "Vader");
     private final User leia = new User(3L, "I am your sister", "Leia", "Skywalker");
     private final User yoda = new User(4L, "Master Yoda", "Yoda", "");
+
+    @Test
+    public void canCheckIfUserExists() {
+        Long lukeId = 10L;
+        boolean result = userService.exists(lukeId);
+        TestCase.assertTrue(result);
+    }
+
+    @Test
+    public void canCheckIfUserNotExists() {
+        Long notPersistedUserId = 684894565L;
+        boolean result = userService.exists(notPersistedUserId);
+        assertFalse(result);
+    }
 
     @Test
     public void canCreateNewUser() {

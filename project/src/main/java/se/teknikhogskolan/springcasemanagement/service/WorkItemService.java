@@ -43,6 +43,10 @@ public class WorkItemService {
         return saveWorkItem(new WorkItem(description));
     }
 
+    public boolean exists(Long workItemId) {
+        return workItemRepository.exists(workItemId);
+    }
+
     private WorkItem saveWorkItem(WorkItem workItem) {
         try {
             return workItemRepository.save(workItem);

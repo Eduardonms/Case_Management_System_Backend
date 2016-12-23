@@ -67,6 +67,13 @@ public final class TestUserService {
     }
 
     @Test
+    public void canCheckIfUserExists() {
+        when(userRepository.exists(user.getId())).thenReturn(true);
+        boolean result = userRepository.exists(user.getId());
+        assertTrue(result);
+    }
+
+    @Test
     public void createUserThatFillsRequirements() {
         userService.create(user.getUserNumber(), user.getUsername(), user.getFirstName(), user.getLastName());
         verify(userRepository, times(1)).save(user);
