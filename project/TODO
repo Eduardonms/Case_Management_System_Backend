@@ -1,0 +1,20 @@
+0.2.1 // TODO add throws clause to methods throwing Service &| RuntimeExceptions
+0.2.2 // TODO possibility to inactivate all entities
+0.2.3 // TODO move 1to1-relation between Issue-WorkItem from db to service layer
+0.2.4 // TODO move 1toMany-relations from db to service layer (?)
+
+release 0.3.0
+
+0.3.1 // TODO userService.existsId(Long userId)
+0.3.2 // TODO teamService.existsId(Long teamId)
+0.3.3 // TODO workItemService.existsId(Long workItemId)
+0.3.4 // TODO issueService.existsId(Long issueId)
+
+release 0.4.0
+
+0.4.1) // TODO userService.existsNumber(Long userNumber)
+0.4.2) // TODO teamService.existsNumber(Long teamNumber)
+0.4.3) // TODO workItemService.existsNumber(Long workItemNumber)
+0.4.4) // TODO issueService.existsNumber(Long issueNumber)
+
+release 0.5.0
