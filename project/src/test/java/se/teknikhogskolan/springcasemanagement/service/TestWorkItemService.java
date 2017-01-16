@@ -240,6 +240,7 @@ public final class TestWorkItemService {
 
         verify(workItemRepository).findByUserId(userId);
         assertEquals(workItemsWithOurUser, workItemCollection);
+        assertFalse(workItemCollection.isEmpty());
         workItemCollection.forEach(item -> assertEquals(userId, item.getUser().getId()));
     }
 
