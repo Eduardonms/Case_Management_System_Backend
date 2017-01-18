@@ -39,6 +39,13 @@ public class TestSecurityUserIntegration {
     }
 
     @Test
+    public void canGetUserByToken() {
+        String token = service.createTokenFor(username, password);
+        SecurityUser result = service.getByToken(token);
+        assertEquals(user, result);
+    }
+
+    @Test
     public void canCreateToken() {
         String token = service.createTokenFor(username, password);
         SecurityUser user = service.getByUsername(username);
