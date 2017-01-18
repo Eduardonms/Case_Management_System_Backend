@@ -57,10 +57,8 @@ public class TestSecurityUserIntegration {
 
     @Test
     public void canGetTokenExpiration() {
-        fail("Service method not yet implemented");
         String token = service.createTokenFor(username, password);
         LocalDateTime result = service.getExpiration(token);
-        System.out.println(result);
     }
 
     @Test

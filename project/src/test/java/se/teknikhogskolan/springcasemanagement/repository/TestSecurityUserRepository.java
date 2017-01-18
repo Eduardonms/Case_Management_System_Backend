@@ -42,24 +42,6 @@ public final class TestSecurityUserRepository {
     }
 
     @Test
-    public void canGetTokensExpiration() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
-            context.scan(PROJECT_PACKAGE);
-            context.refresh();
-            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
-
-            String token = generateToken(255);
-            LocalDateTime expireTime = LocalDateTime.now().plusDays(1L);
-            user.addToken(token, expireTime);
-            executeOne(repo -> repo.save(user));
-
-            String expirationDate = securityUserRepository.getTokenExpiration(token);
-            assertNotNull(expirationDate);
-            assertFalse(expirationDate.isEmpty());
-        }
-    }
-
-    @Test
     public void canGetAndAddTokenAndFindByToken() {
 
         final SecurityUser batman = executeOne(repo -> repo.findByUsername(user.getUsername()));

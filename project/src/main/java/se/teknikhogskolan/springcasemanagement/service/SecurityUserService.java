@@ -108,9 +108,8 @@ public class SecurityUserService {
         return null == repository.findByUsername(username);
     }
 
-    @Deprecated
     public LocalDateTime getExpiration(String token) throws NotImplementedException{
-        throw new NotImplementedException();
-//        return LocalDateTime.parse(repository.getTokenExpiration(token));
+        SecurityUser user = repository.findByToken(token);
+        return LocalDateTime.parse(user.getTokensExpiration().get(token));
     }
 }
