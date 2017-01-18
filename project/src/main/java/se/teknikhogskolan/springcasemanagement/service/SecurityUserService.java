@@ -27,7 +27,7 @@ public class SecurityUserService {
         this.securityUserRepository = securityUserRepository;
     }
 
-    public Optional<SecurityUser> create(String username, String password) throws IllegalArgumentException {
+    public SecurityUser create(String username, String password) throws IllegalArgumentException {
         if (null == username) throw new IllegalArgumentException("Username must not be null");
         if (null == password) throw new IllegalArgumentException("Password must not be null");
         if (null != securityUserRepository.findByUsername(username)) throw new IllegalArgumentException(String.format(
@@ -40,7 +40,7 @@ public class SecurityUserService {
 
         SecurityUser user = new SecurityUser(username, tokens, hashedPassword, salt, hashingIterations);
 
-        return Optional.ofNullable(securityUserRepository.save(user));
+        return securityUserRepository.save(user);
     }
 
     public boolean isAuthorized(String username, String password) throws NotFoundException {
@@ -57,16 +57,16 @@ public class SecurityUserService {
         return hashedPassword.equals(hashPassword(password, salt));
     }
 
-    public Optional<SecurityUser> getById(Long id) {
-        return Optional.ofNullable(securityUserRepository.findOne(id));
+    public SecurityUser getById(Long id) {
+        return securityUserRepository.findOne(id);
     }
 
-    public Optional<SecurityUser> getByToken(String token) {
-        return Optional.ofNullable(securityUserRepository.findByToken(token));
+    public SecurityUser getByToken(String token) {
+        return securityUserRepository.findByToken(token);
     }
 
-    public Optional<SecurityUser> getByUsername(String username) {
-        return Optional.ofNullable(securityUserRepository.findByUsername(username));
+    public SecurityUser getByUsername(String username) {
+        return securityUserRepository.findByUsername(username);
     }
 
     public String createSecurityUserToken(Long id, LocalDate expirationDate, LocalTime expirationTime) {
