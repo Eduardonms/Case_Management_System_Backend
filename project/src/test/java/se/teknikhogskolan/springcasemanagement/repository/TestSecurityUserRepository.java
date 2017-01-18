@@ -10,7 +10,10 @@ import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateToken;
 
 public final class TestSecurityUserRepository {
@@ -39,19 +42,36 @@ public final class TestSecurityUserRepository {
     }
 
     @Test
-    public void canCreateAndAddTokenAndFindByToken() {
+    public void canGetTokensExpiration() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.scan(PROJECT_PACKAGE);
+            context.refresh();
+            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
 
-        final SecurityUser batman = executeOne(repo -> repo.save(new SecurityUser("Batman")));
-        System.out.println(batman);
+            String token = generateToken(255);
+            LocalDateTime expireTime = LocalDateTime.now().plusDays(1L);
+            user.addToken(token, expireTime);
+            executeOne(repo -> repo.save(user));
+
+            String expirationDate = securityUserRepository.getTokenExpiration(token);
+            assertNotNull(expirationDate);
+            assertFalse(expirationDate.isEmpty());
+        }
+    }
+
+    @Test
+    public void canGetAndAddTokenAndFindByToken() {
+
+        final SecurityUser batman = executeOne(repo -> repo.findByUsername(user.getUsername()));
 
         String token = generateToken(255);
         LocalDateTime expireTime = LocalDateTime.now().plusDays(1L);
         batman.addToken(token, expireTime);
         SecurityUser batmanWithToken = executeOne(repo -> repo.save(batman));
-        System.out.println(batmanWithToken);
+        assertFalse(batman.getTokensExpiration().isEmpty());
 
         SecurityUser result = executeOne(repo -> repo.findByToken(token));
-        System.out.println(result);
+        assertEquals(batmanWithToken, result);
     }
 
     @Test
