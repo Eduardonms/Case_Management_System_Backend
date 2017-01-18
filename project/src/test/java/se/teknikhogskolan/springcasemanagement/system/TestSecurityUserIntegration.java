@@ -92,12 +92,12 @@ public class TestSecurityUserIntegration {
     @Test
     public void canGetUserByToken() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(username, token));
+        assertTrue(service.verify(token));
     }
 
     @Test
     public void canCreateToken() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(username, token));
+        assertTrue(service.verify(token));
     }
 }

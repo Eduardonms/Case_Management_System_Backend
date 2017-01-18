@@ -1,6 +1,7 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,10 +38,8 @@ public class SecurityUserService {
 
         String salt = generateSalt();
         String hashedPassword = hashPassword(password, salt);
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put(generateToken(254), LocalDateTime.now().plusDays(1L).toString());
 
-        SecurityUser user = repository.save(new SecurityUser(username, tokens, hashedPassword, salt, hashingIterations));
+        SecurityUser user = repository.save(new SecurityUser(username, new HashMap<>(), hashedPassword, salt, hashingIterations));
 
         return user.getId();
     }
@@ -98,11 +97,11 @@ public class SecurityUserService {
         } else throw new NotAllowedException("Token expired");
     }
 
-    public boolean verify(String username, String token) {
+    public boolean verify(String token) {
         SecurityUser user = getByToken(token);
-        if (username.equals(user.getUsername())) {
-            return true;
-        } else return false;
+        if (null == user) {
+            return false;
+        } else return true;
     }
 
     public boolean usernameIsAvailable(String username) {
