@@ -21,6 +21,7 @@ import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -56,11 +57,23 @@ public class TestSecurityUserIntegration {
     }
 
     @Test
+    public void canRenewTokenExpirationTime() {
+        String token = service.createTokenFor(username, password);
+
+        LocalDateTime originalExpiration = service.getExpiration(token);
+        LocalDateTime renewedExpiration = service.renewExpiration(token);
+        LocalDateTime storedExpirationAfterRenewal = service.getExpiration(token);
+
+        assertNotEquals(originalExpiration, renewedExpiration);
+        assertNotEquals(originalExpiration, storedExpirationAfterRenewal);
+        assertEquals(renewedExpiration, storedExpirationAfterRenewal);
+    }
+
+    @Test
     public void canGetTokenExpiration() {
-        fail("Service method not yet implemented");
         String token = service.createTokenFor(username, password);
         LocalDateTime result = service.getExpiration(token);
-        System.out.println(result);
+        assertNotNull(result);
     }
 
     @Test
@@ -92,12 +105,12 @@ public class TestSecurityUserIntegration {
     @Test
     public void canGetUserByToken() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(username, token));
+        assertTrue(service.verify(token));
     }
 
     @Test
     public void canCreateToken() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(username, token));
+        assertTrue(service.verify(token));
     }
 }

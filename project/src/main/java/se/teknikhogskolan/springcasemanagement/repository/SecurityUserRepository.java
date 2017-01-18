@@ -12,9 +12,4 @@ public interface SecurityUserRepository extends CrudRepository<SecurityUser, Lon
 
     SecurityUser findByUsername(String username);
 
-    @SuppressWarnings("JpaQlInspection")
-    @Deprecated /** returns all values from user with token, should return specific value(string date) matching key(token) */
-    @Query("select VALUE(u.tokensExpiration) from SecurityUser u where KEY(u.tokensExpiration) = ?1")
-    String getTokenExpiration(String token);
-
 }

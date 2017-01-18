@@ -13,7 +13,6 @@ import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateToken;
 
 public final class TestSecurityUserRepository {
@@ -38,24 +37,6 @@ public final class TestSecurityUserRepository {
             context.refresh();
             SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
             securityUserRepository.delete(user.getId());
-        }
-    }
-
-    @Test
-    public void canGetTokensExpiration() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
-            context.scan(PROJECT_PACKAGE);
-            context.refresh();
-            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
-
-            String token = generateToken(255);
-            LocalDateTime expireTime = LocalDateTime.now().plusDays(1L);
-            user.addToken(token, expireTime);
-            executeOne(repo -> repo.save(user));
-
-            String expirationDate = securityUserRepository.getTokenExpiration(token);
-            assertNotNull(expirationDate);
-            assertFalse(expirationDate.isEmpty());
         }
     }
 

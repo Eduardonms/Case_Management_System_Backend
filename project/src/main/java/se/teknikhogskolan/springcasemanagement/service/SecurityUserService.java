@@ -2,7 +2,6 @@ package se.teknikhogskolan.springcasemanagement.service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import se.teknikhogskolan.springcasemanagement.repository.SecurityUserRepository
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAllowedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateSalt;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateToken;
@@ -37,10 +35,8 @@ public class SecurityUserService {
 
         String salt = generateSalt();
         String hashedPassword = hashPassword(password, salt);
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put(generateToken(254), LocalDateTime.now().plusDays(1L).toString());
 
-        SecurityUser user = repository.save(new SecurityUser(username, tokens, hashedPassword, salt, hashingIterations));
+        SecurityUser user = repository.save(new SecurityUser(username, new HashMap<>(), hashedPassword, salt, hashingIterations));
 
         return user.getId();
     }
@@ -92,26 +88,39 @@ public class SecurityUserService {
 
     private SecurityUser getByToken(String token) {
         SecurityUser user = repository.findByToken(token);
+        if (null == user) throw new NotFoundException(String.format("No User with token '%s'", token));
+
         user = removeExpiredTokens(user);
+
         if (user.getTokensExpiration().containsKey(token)) {
             return user;
         } else throw new NotAllowedException("Token expired");
     }
 
-    public boolean verify(String username, String token) {
+    public boolean verify(String token) {
         SecurityUser user = getByToken(token);
-        if (username.equals(user.getUsername())) {
-            return true;
-        } else return false;
+        if (null == user) {
+            return false;
+        } else return true;
     }
 
     public boolean usernameIsAvailable(String username) {
         return null == repository.findByUsername(username);
     }
 
-    @Deprecated
-    public LocalDateTime getExpiration(String token) throws NotImplementedException{
-        throw new NotImplementedException();
-//        return LocalDateTime.parse(repository.getTokenExpiration(token));
+    public LocalDateTime getExpiration(String token) {
+        SecurityUser user = getByToken(token);
+        return LocalDateTime.parse(user.getTokensExpiration().get(token));
+    }
+
+    /** @return new expiration time */
+    public LocalDateTime renewExpiration(String token) {
+        SecurityUser user = getByToken(token);
+
+        LocalDateTime renewal = LocalDateTime.now().plusDays(1L);
+        user.getTokensExpiration().replace(token, renewal.toString());
+        repository.save(user);
+
+        return renewal;
     }
 }
