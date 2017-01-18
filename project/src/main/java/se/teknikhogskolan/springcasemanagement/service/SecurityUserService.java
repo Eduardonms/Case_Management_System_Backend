@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
 import se.teknikhogskolan.springcasemanagement.repository.SecurityUserRepository;
-import se.teknikhogskolan.springcasemanagement.service.exception.NotAllowedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundException;
 
@@ -88,13 +87,13 @@ public class SecurityUserService {
 
     private SecurityUser getByToken(String token) {
         SecurityUser user = repository.findByToken(token);
-        if (null == user) throw new NotFoundException(String.format("No User with token '%s'", token));
+        if (null == user) throw new NotFoundException("Not authorized");
 
         user = removeExpiredTokens(user);
 
         if (user.getTokensExpiration().containsKey(token)) {
             return user;
-        } else throw new NotAllowedException("Token expired");
+        } else throw new NotAuthorizedException("Login session has expired");
     }
 
     public boolean verify(String token) {

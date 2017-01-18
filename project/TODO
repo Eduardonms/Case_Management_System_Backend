@@ -1,3 +1,8 @@
+// TODO readjust TODO:S
+// TODO remove entity leakage
+// TODO user Optional from repo
+// TODO merge User and SecurityUser
+
 0.2.1 // TODO add throws clause to methods throwing Service &| RuntimeExceptions
 0.2.2 // TODO possibility to inactivate all entities
 0.2.3 // TODO move 1to1-relation between Issue-WorkItem from db to service layer
