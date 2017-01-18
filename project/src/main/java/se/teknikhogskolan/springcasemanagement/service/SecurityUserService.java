@@ -26,7 +26,8 @@ public class SecurityUserService {
         this.securityUserRepository = securityUserRepository;
     }
 
-    public SecurityUser create(String username, String password) throws IllegalArgumentException {
+    /** @return id */
+    public Long create(String username, String password) throws IllegalArgumentException {
         if (null == username) throw new IllegalArgumentException("Username must not be null");
         if (null == password) throw new IllegalArgumentException("Password must not be null");
         if (null != securityUserRepository.findByUsername(username)) throw new IllegalArgumentException(String.format(
@@ -37,9 +38,9 @@ public class SecurityUserService {
         Map<String, String> tokens = new HashMap<>();
         tokens.put(generateToken(254), LocalDateTime.now().plusDays(1L).toString());
 
-        SecurityUser user = new SecurityUser(username, tokens, hashedPassword, salt, hashingIterations);
+        SecurityUser user = securityUserRepository.save(new SecurityUser(username, tokens, hashedPassword, salt, hashingIterations));
 
-        return securityUserRepository.save(user);
+        return user.getId();
     }
 
     public String createTokenFor(String username, String password) {
