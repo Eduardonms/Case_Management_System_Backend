@@ -87,7 +87,7 @@ public class SecurityUserService {
 
     private SecurityUser getByToken(String token) {
         SecurityUser user = repository.findByToken(token);
-        if (null == user) throw new NotFoundException("Not authorized");
+        if (null == user) throw new NotAuthorizedException("Not authorized");
 
         user = removeExpiredTokens(user);
 
