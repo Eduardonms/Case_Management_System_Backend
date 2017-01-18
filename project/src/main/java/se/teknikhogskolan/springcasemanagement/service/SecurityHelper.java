@@ -31,6 +31,7 @@ public final class SecurityHelper {
     }
 
     public static final String hashPassword(final String password, final String salt) throws HashingException {
+
         try {
 
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
