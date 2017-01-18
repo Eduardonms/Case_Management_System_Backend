@@ -21,6 +21,7 @@ import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -56,9 +57,23 @@ public class TestSecurityUserIntegration {
     }
 
     @Test
+    public void canRenewTokenExpirationTime() {
+        String token = service.createTokenFor(username, password);
+
+        LocalDateTime originalExpiration = service.getExpiration(token);
+        LocalDateTime renewedExpiration = service.renewExpiration(token);
+        LocalDateTime storedExpirationAfterRenewal = service.getExpiration(token);
+
+        assertNotEquals(originalExpiration, renewedExpiration);
+        assertNotEquals(originalExpiration, storedExpirationAfterRenewal);
+        assertEquals(renewedExpiration, storedExpirationAfterRenewal);
+    }
+
+    @Test
     public void canGetTokenExpiration() {
         String token = service.createTokenFor(username, password);
         LocalDateTime result = service.getExpiration(token);
+        assertNotNull(result);
     }
 
     @Test

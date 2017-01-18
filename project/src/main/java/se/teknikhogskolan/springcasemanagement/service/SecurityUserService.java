@@ -1,9 +1,7 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +10,6 @@ import se.teknikhogskolan.springcasemanagement.repository.SecurityUserRepository
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAllowedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateSalt;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateToken;
@@ -91,7 +88,10 @@ public class SecurityUserService {
 
     private SecurityUser getByToken(String token) {
         SecurityUser user = repository.findByToken(token);
+        if (null == user) throw new NotFoundException(String.format("No User with token '%s'", token));
+
         user = removeExpiredTokens(user);
+
         if (user.getTokensExpiration().containsKey(token)) {
             return user;
         } else throw new NotAllowedException("Token expired");
@@ -108,8 +108,19 @@ public class SecurityUserService {
         return null == repository.findByUsername(username);
     }
 
-    public LocalDateTime getExpiration(String token) throws NotImplementedException{
-        SecurityUser user = repository.findByToken(token);
+    public LocalDateTime getExpiration(String token) {
+        SecurityUser user = getByToken(token);
         return LocalDateTime.parse(user.getTokensExpiration().get(token));
+    }
+
+    /** @return new expiration time */
+    public LocalDateTime renewExpiration(String token) {
+        SecurityUser user = getByToken(token);
+
+        LocalDateTime renewal = LocalDateTime.now().plusDays(1L);
+        user.getTokensExpiration().replace(token, renewal.toString());
+        repository.save(user);
+
+        return renewal;
     }
 }
