@@ -27,9 +27,9 @@ public class SecurityUserService {
 
     /** @return id */
     public Long create(String username, String password) throws IllegalArgumentException {
-        if (null == username) throw new IllegalArgumentException("Username must not be null");
-        if (null == password) throw new IllegalArgumentException("Password must not be null");
-        if (null != repository.findByUsername(username)) throw new IllegalArgumentException(String.format(
+        if (null == username || username.isEmpty()) throw new IllegalArgumentException("Username must have actual value");
+        if (null == password || password.isEmpty()) throw new IllegalArgumentException("Password must have actual value");
+        if (usernameIsTaken(username)) throw new IllegalArgumentException(String.format(
                 "Username '%s' already exist", username));
 
         String salt = generateSalt();
@@ -38,6 +38,14 @@ public class SecurityUserService {
         SecurityUser user = repository.save(new SecurityUser(username, new HashMap<>(), hashedPassword, salt, hashingIterations));
 
         return user.getId();
+    }
+
+    private boolean usernameIsTaken(String username) {
+        return !usernameIsAvailable(username);
+    }
+
+    public boolean usernameIsAvailable(String username) {
+        return null == repository.findByUsername(username);
     }
 
     public String createTokenFor(String username, String password) {
@@ -86,25 +94,27 @@ public class SecurityUserService {
     }
 
     private SecurityUser getByToken(String token) {
-        SecurityUser user = repository.findByToken(token);
-        if (null == user) throw new NotFoundException("Not authorized");
-
+        SecurityUser user = repository.findByToken(token); // Mysql is NOT case sensitive
+        if (null == user)  throw new NotAuthorizedException("Not authorized");
+        if (tokenIsExpired(token, user)) throw new NotAuthorizedException("Login session expired");
         user = removeExpiredTokens(user);
-
-        if (user.getTokensExpiration().containsKey(token)) {
-            return user;
-        } else throw new NotAuthorizedException("Login session has expired");
+        if (!user.getTokensExpiration().containsKey(token)) throw new NotAuthorizedException("Not authorized");
+        return user;
     }
 
-    public boolean verify(String token) {
-        SecurityUser user = getByToken(token);
-        if (null == user) {
-            return false;
-        } else return true;
+    public void verify(String token) {
+        SecurityUser user = repository.findByToken(token); // Mysql is NOT case sensitive
+		if (null == user || !user.getTokensExpiration().containsKey(token)){
+			throw new NotAuthorizedException("Not authorized");
+		}
+		user = removeExpiredTokens(user);
+		if (user.getTokensExpiration() == null || !user.getTokensExpiration().containsKey(token)){
+			throw new NotAuthorizedException("Login session has expired");
+		}
     }
 
-    public boolean usernameIsAvailable(String username) {
-        return null == repository.findByUsername(username);
+    private boolean tokenIsExpired(String token, SecurityUser user) {
+        return LocalDateTime.parse(user.getTokensExpiration().get(token)).isBefore(LocalDateTime.now());
     }
 
     public LocalDateTime getExpiration(String token) {
@@ -112,7 +122,7 @@ public class SecurityUserService {
         return LocalDateTime.parse(user.getTokensExpiration().get(token));
     }
 
-    /** @return new expiration time */
+    /** @return new expiration time, after updated in system */
     public LocalDateTime renewExpiration(String token) {
         SecurityUser user = getByToken(token);
 

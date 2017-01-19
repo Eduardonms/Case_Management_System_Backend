@@ -2,6 +2,8 @@ package se.teknikhogskolan.springcasemanagement.repository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.junit.AfterClass;
@@ -13,6 +15,7 @@ import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateToken;
 
 public final class TestSecurityUserRepository {
@@ -37,6 +40,24 @@ public final class TestSecurityUserRepository {
             context.refresh();
             SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
             securityUserRepository.delete(user.getId());
+        }
+    }
+
+    @Test
+    public void ifUserHasNoTokensEmptyMapIsReturnedNotNull() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.scan(PROJECT_PACKAGE);
+            context.refresh();
+            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+
+            SecurityUser noTokensUser = new SecurityUser("NoTokes4Life");
+            noTokensUser = securityUserRepository.save(noTokensUser);
+
+            assertNotNull(noTokensUser.getTokensExpiration());
+            assertTrue(Map.class.isAssignableFrom(noTokensUser.getTokensExpiration().getClass()));
+            assertTrue(noTokensUser.getTokensExpiration().isEmpty());
+
+            securityUserRepository.delete(noTokensUser);
         }
     }
 

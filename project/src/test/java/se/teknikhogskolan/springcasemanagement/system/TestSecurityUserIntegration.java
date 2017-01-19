@@ -103,14 +103,31 @@ public class TestSecurityUserIntegration {
     }
 
     @Test
-    public void canGetUserByToken() {
+    public void validTokenShouldPassWithoutException() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(token));
+        service.verify(token);
+    }
+
+    @Test
+    public void invalidTokenShouldThrowException() {
+        thrown.expect(NotAuthorizedException.class);
+        thrown.expectMessage("Not authorized");
+        String fakeToken = "saodadfaslgknosdfgniodfgn";
+        service.verify(fakeToken);
+    }
+
+    @Test
+    public void validationOfTokenShouldBeCaseSensitive() {
+        thrown.expect(NotAuthorizedException.class);
+        thrown.expectMessage("Not authorized");
+        String token = service.createTokenFor(username, password);
+        String wrongCases = token.toLowerCase();
+        service.verify(wrongCases);
     }
 
     @Test
     public void canCreateToken() {
         String token = service.createTokenFor(username, password);
-        assertTrue(service.verify(token));
+        service.verify(token);
     }
 }
