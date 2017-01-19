@@ -96,10 +96,9 @@ public class SecurityUserService {
 
     public void verify(String token) {
         SecurityUser user = repository.findByToken(token); // Mysql is NOT case sensitive
-        if (null == user) throw new NotAuthorizedException("Not authorized");
-        if (tokenIsExpired(token, user)) throw new NotAuthorizedException("Login session expired");
+        if (null == user || user.getTokensExpiration().containsKey(token)) throw new NotAuthorizedException("Not authorized");
         user = removeExpiredTokens(user);
-        if (!user.getTokensExpiration().containsKey(token)) throw new NotAuthorizedException("Not authorized");
+        if (!user.getTokensExpiration().containsKey(token)) throw new NotAuthorizedException("Login session has expired");
     }
 
     private boolean tokenIsExpired(String token, SecurityUser user) {
