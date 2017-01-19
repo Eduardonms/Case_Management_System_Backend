@@ -27,9 +27,9 @@ public class SecurityUserService {
 
     /** @return id */
     public Long create(String username, String password) throws IllegalArgumentException {
-        if (null == username) throw new IllegalArgumentException("Username must not be null");
-        if (null == password) throw new IllegalArgumentException("Password must not be null");
-        if (null != repository.findByUsername(username)) throw new IllegalArgumentException(String.format(
+        if (null == username || username.isEmpty()) throw new IllegalArgumentException("Username must have actual value");
+        if (null == password || password.isEmpty()) throw new IllegalArgumentException("Password must have actual value");
+        if (!usernameIsAvailable(username)) throw new IllegalArgumentException(String.format(
                 "Username '%s' already exist", username));
 
         String salt = generateSalt();
