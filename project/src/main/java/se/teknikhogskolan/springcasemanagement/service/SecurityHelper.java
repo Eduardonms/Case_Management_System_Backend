@@ -27,21 +27,15 @@ public final class SecurityHelper {
         SecureRandom secureRandom = new SecureRandom();
         byte[] salt = new byte[hashSize/8];
         secureRandom.nextBytes(salt);
-        return salt.toString();
+        return new String(salt);
     }
 
     public static final String hashPassword(final String password, final String salt) throws HashingException {
-
         try {
-
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), hashingIterations, hashSize);
-
             SecretKey key = skf.generateSecret(spec);
-
-            return key.toString();
-
+            return new String(key.getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new HashingException(String.format("Cannot hash '%s'", password), e);
         }
