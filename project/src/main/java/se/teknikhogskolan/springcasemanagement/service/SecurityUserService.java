@@ -112,7 +112,7 @@ public class SecurityUserService {
         return LocalDateTime.parse(user.getTokensExpiration().get(token));
     }
 
-    /** @return new expiration time */
+    /** @return new expiration time, after updated in system */
     public LocalDateTime renewExpiration(String token) {
         SecurityUser user = getByToken(token);
 
