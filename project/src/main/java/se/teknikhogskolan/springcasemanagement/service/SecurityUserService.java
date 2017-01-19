@@ -29,7 +29,7 @@ public class SecurityUserService {
     public Long create(String username, String password) throws IllegalArgumentException {
         if (null == username || username.isEmpty()) throw new IllegalArgumentException("Username must have actual value");
         if (null == password || password.isEmpty()) throw new IllegalArgumentException("Password must have actual value");
-        if (!usernameIsAvailable(username)) throw new IllegalArgumentException(String.format(
+        if (usernameIsTaken(username)) throw new IllegalArgumentException(String.format(
                 "Username '%s' already exist", username));
 
         String salt = generateSalt();
@@ -38,6 +38,14 @@ public class SecurityUserService {
         SecurityUser user = repository.save(new SecurityUser(username, new HashMap<>(), hashedPassword, salt, hashingIterations));
 
         return user.getId();
+    }
+
+    private boolean usernameIsTaken(String username) {
+        return !usernameIsAvailable(username);
+    }
+
+    public boolean usernameIsAvailable(String username) {
+        return null == repository.findByUsername(username);
     }
 
     public String createTokenFor(String username, String password) {
@@ -107,10 +115,6 @@ public class SecurityUserService {
 
     private boolean tokenIsExpired(String token, SecurityUser user) {
         return LocalDateTime.parse(user.getTokensExpiration().get(token)).isBefore(LocalDateTime.now());
-    }
-
-    public boolean usernameIsAvailable(String username) {
-        return null == repository.findByUsername(username);
     }
 
     public LocalDateTime getExpiration(String token) {
