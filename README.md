@@ -1,5 +1,5 @@
-# Case management system made in Spring
-## Used by our Jaxsons REST API
+# Case Management System made in Spring
+## Published as REST API by our [Jaxson Project](https://github.com/peferb/jaxson/blob/master/README.md)
 
 ####Made to demonstrate the following techniques:
   + Security by Token based authentication
