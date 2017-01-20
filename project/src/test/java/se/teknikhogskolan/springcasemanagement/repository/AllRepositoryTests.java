@@ -6,6 +6,5 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({TestIssueRepository.class, TestTeamRepository.class, TestUserRepository.class,
-        TestWorkItemRepository.class})
-public final class AllRepositoryTests {
-}
+        TestWorkItemRepository.class, TestSecurityUserRepository.class})
+public final class AllRepositoryTests {}
