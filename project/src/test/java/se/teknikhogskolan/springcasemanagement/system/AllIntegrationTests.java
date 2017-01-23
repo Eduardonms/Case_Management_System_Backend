@@ -5,6 +5,6 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ TestIssueIntegration.class, TestTeamIntegration.class, TestUserIntegration.class,
-        TestWorkItemIntegration.class })
+        TestWorkItemIntegration.class, TestSecurityUserIntegration.class })
 public class AllIntegrationTests {
 }

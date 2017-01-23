@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import se.teknikhogskolan.springcasemanagement.model.Jwt;
 import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
 import se.teknikhogskolan.springcasemanagement.repository.SecurityUserRepository;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
@@ -46,6 +47,17 @@ public class SecurityUserService {
 
     public boolean usernameIsAvailable(String username) {
         return null == repository.findByUsername(username);
+    }
+
+    public String createJwtFor(String username, String password) {
+        SecurityUser user = getByUsername(username);
+
+        if (passwordMatchesUser(password, user)) {
+            String secret = generateToken(255);
+            Jwt jwt = new Jwt();
+            return secret;
+        } else throw new NotAuthorizedException("Wrong password");
+
     }
 
     public String createTokenFor(String username, String password) {

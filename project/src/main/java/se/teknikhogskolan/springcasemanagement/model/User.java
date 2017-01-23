@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -30,8 +31,7 @@ public class User extends AbstractEntity {
 
     private boolean active;
 
-    protected User() {
-    }
+    protected User() { /* Used by JPA */}
 
     public User(Long userNumber, String username, String firstName, String lastName) {
         this.userNumber = userNumber;
