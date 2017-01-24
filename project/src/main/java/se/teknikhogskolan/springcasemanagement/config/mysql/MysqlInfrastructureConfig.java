@@ -1,5 +1,9 @@
 package se.teknikhogskolan.springcasemanagement.config.mysql;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -31,12 +35,16 @@ public class MysqlInfrastructureConfig extends JpaConfig {
 
     @Bean
     @Override
-    public DataSource dataSource() {
+    public DataSource dataSource() throws IOException {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("com.mysql.jdbc.Driver");
         config.setJdbcUrl("jdbc:mysql://localhost:3306/casemanagement");
-        config.setUsername("root");
-        config.setPassword("root");
+
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(System.getProperty("user.home") + "/spring-case-management.properties"));
+
+        config.setUsername(properties.getProperty("mysql_username"));
+        config.setPassword(properties.getProperty("mysql_password"));
         return new HikariDataSource(config);
     }
 

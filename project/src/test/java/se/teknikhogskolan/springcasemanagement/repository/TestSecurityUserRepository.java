@@ -28,7 +28,7 @@ public final class TestSecurityUserRepository {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
 //
-//            user = context.getBean(SecurityUserRepository.class).save(new SecureUser(""));
+//            user = context.getBean(SecureUserRepository.class).save(new SecureUser(""));
 //        }
 //    }
 //
@@ -37,7 +37,7 @@ public final class TestSecurityUserRepository {
 //        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
-//            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+//            SecureUserRepository securityUserRepository = context.getBean(SecureUserRepository.class);
 //            securityUserRepository.delete(user.getId());
 //        }
 //    }
@@ -47,7 +47,7 @@ public final class TestSecurityUserRepository {
 //        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
-//            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+//            SecureUserRepository securityUserRepository = context.getBean(SecureUserRepository.class);
 //
 //            SecureUser noTokensUser = new SecureUser("NoTokes4Life");
 //            noTokensUser = securityUserRepository.save(noTokensUser);
@@ -85,29 +85,29 @@ public final class TestSecurityUserRepository {
 //    }
 //
 //
-//    private void executeVoid(Consumer<SecurityUserRepository> operation) {
+//    private void executeVoid(Consumer<SecureUserRepository> operation) {
 //        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
-//            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+//            SecureUserRepository securityUserRepository = context.getBean(SecureUserRepository.class);
 //            operation.accept(securityUserRepository);
 //        }
 //    }
 //
-//    private SecureUser executeOne(Function<SecurityUserRepository, SecureUser> operation) {
+//    private SecureUser executeOne(Function<SecureUserRepository, SecureUser> operation) {
 //        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
-//            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+//            SecureUserRepository securityUserRepository = context.getBean(SecureUserRepository.class);
 //            return operation.apply(securityUserRepository);
 //        }
 //    }
 //
-//    private Collection<SecureUser> executeMany(Function<SecurityUserRepository, Collection<SecureUser>> operation) {
+//    private Collection<SecureUser> executeMany(Function<SecureUserRepository, Collection<SecureUser>> operation) {
 //        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
 //            context.scan(PROJECT_PACKAGE);
 //            context.refresh();
-//            SecurityUserRepository securityUserRepository = context.getBean(SecurityUserRepository.class);
+//            SecureUserRepository securityUserRepository = context.getBean(SecureUserRepository.class);
 //            return operation.apply(securityUserRepository);
 //        }
 //    }

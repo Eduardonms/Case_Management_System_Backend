@@ -23,13 +23,12 @@ public class SecureUser {
 
     protected SecureUser() { /* used by JPA */ }
 
-    public SecureUser(String username, String hashedPassword, String salt, int saltingIterations, String jwt) {
+    public SecureUser(String username, String hashedPassword, String salt, int saltingIterations) {
         if (null == username) throw new IllegalArgumentException("Username must not be null");
         this.username = username;
         this.hashedPassword = hashedPassword;
         this.salt = salt;
         this.saltingIterations = saltingIterations;
-        this.jwt = jwt;
     }
 
     public SecureUser setAdmin(boolean admin) {
