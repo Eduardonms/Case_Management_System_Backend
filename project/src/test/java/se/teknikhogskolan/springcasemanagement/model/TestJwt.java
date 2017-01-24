@@ -2,20 +2,20 @@ package se.teknikhogskolan.springcasemanagement.model;
 
 import java.time.LocalDateTime;
 import org.junit.Test;
-import se.teknikhogskolan.springcasemanagement.model.exception.ModelException;
+import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestJwt {
 
-    @Test(expected = ModelException.class)
-    public void jwtStringCannotBeGeneratedWithoutObjectFirstBeingPersisted() throws ModelException {
+    @Test(expected = EncodingException.class)
+    public void jwtStringCannotBeGeneratedWithoutObjectFirstBeingPersisted() throws EncodingException {
         Jwt jwt = new Jwt("This test", "userId", "username", "token", LocalDateTime.now(), LocalDateTime.now().plusDays(1L));
         jwt.generateJWT();
     }
 
     @Test
-    public void canCreateJwtObject() throws ModelException {
+    public void canCreateJwtObject() throws EncodingException {
         LocalDateTime now = LocalDateTime.now();
         final Jwt jwt = new Jwt("This test", "userId", "username", "token", now, now.plusDays(1L));
 

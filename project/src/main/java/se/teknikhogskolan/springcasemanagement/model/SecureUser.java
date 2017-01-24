@@ -1,73 +1,65 @@
 package se.teknikhogskolan.springcasemanagement.model;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class SecurityUser {
+public class SecureUser {
 
     @Id
     @GeneratedValue
     private Long id;
     @Column(nullable = false, unique = true)
     private String username;
+    private boolean admin = false;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> tokensExpiration = new HashMap<>();
+    private String jwt = "";
 
     private String hashedPassword = "";
     private String salt = "";
     private int saltingIterations = 0;
 
-    public SecurityUser(String username) {
+    protected SecureUser() { /* used by JPA */ }
+
+    public SecureUser(String username, String hashedPassword, String salt, int saltingIterations, String jwt) {
         if (null == username) throw new IllegalArgumentException("Username must not be null");
         this.username = username;
-    }
-
-    protected SecurityUser() { /* used by JPA */ }
-
-    public SecurityUser(String username, Map<String, String> tokensExpiration, String hashedPassword, String salt, int saltingIterations) {
-        if (null == username) throw new IllegalArgumentException("Username must not be null");
-        this.username = username;
-        this.tokensExpiration = tokensExpiration;
         this.hashedPassword = hashedPassword;
         this.salt = salt;
         this.saltingIterations = saltingIterations;
+        this.jwt = jwt;
     }
 
-    public void setHashedPassword(String hashedPassword) {
+    public SecureUser setAdmin(boolean admin) {
+        this.admin = admin;
+        return this;
+    }
+
+    public SecureUser setHashedPassword(String hashedPassword) {
         this.hashedPassword = hashedPassword;
+        return this;
     }
 
-    public void setSalt(String salt) {
+    public SecureUser setSalt(String salt) {
         this.salt = salt;
+        return this;
     }
 
-    public void setSaltingIterations(int saltingIterations) {
+    public SecureUser setSaltingIterations(int saltingIterations) {
         this.saltingIterations = saltingIterations;
+        return this;
     }
 
-    public void addToken(String token, LocalDateTime expires) {
-        this.tokensExpiration.put(token, expires.toString());
-    }
-
-    public void removeToken(String token) {
-        this.tokensExpiration.remove(token);
-    }
-
-    public void setUsername(String username) {
+    public SecureUser setUsername(String username) {
         this.username = username;
+        return this;
     }
 
-    public void setTokensExpiration(Map<String, String> tokensExpiration) {
-        this.tokensExpiration = tokensExpiration;
+    public SecureUser setJwt(String jwt) {
+        this.jwt = jwt;
+        return this;
     }
 
     @Override
@@ -75,8 +67,7 @@ public class SecurityUser {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SecurityUser user = (SecurityUser) o;
-
+        SecureUser user = (SecureUser) o;
         return username.equals(user.username);
     }
 
@@ -87,10 +78,9 @@ public class SecurityUser {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("SecurityUser{");
+        final StringBuffer sb = new StringBuffer("SecureUser{");
         sb.append("id=").append(id);
         sb.append(", username='").append(username).append('\'');
-        sb.append(", tokensExpiration=").append(tokensExpiration);
         sb.append(", hashedPassword='").append(hashedPassword).append('\'');
         sb.append(", salt='").append(salt).append('\'');
         sb.append(", saltingIterations=").append(saltingIterations);
@@ -118,7 +108,11 @@ public class SecurityUser {
         return saltingIterations;
     }
 
-    public Map<String, String> getTokensExpiration() {
-        return tokensExpiration;
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public String getJwt() {
+        return jwt;
     }
 }

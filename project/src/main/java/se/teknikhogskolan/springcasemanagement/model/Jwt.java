@@ -10,8 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import org.json.JSONObject;
-import se.teknikhogskolan.springcasemanagement.model.exception.ModelException;
+import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
 
 /** Uses HmacSHA256 */
 @Entity
@@ -105,8 +104,8 @@ public class Jwt {
     }
 
     /* uses HmacSHA256 */
-    private String getSignature() throws ModelException {
-        if (null == secret) throw new ModelException("Cannot create JWT signature without secret");
+    private String getSignature() throws EncodingException {
+        if (null == secret) throw new EncodingException("Cannot create JWT signature without secret");
 
         Mac hmacSha256 = getHmacWithSecret();
 
@@ -118,22 +117,22 @@ public class Jwt {
         return Base64.getUrlEncoder().encodeToString(hmacSha256.doFinal(builder.toString().getBytes()));
     }
 
-    private Mac getHmacWithSecret() throws ModelException {
+    private Mac getHmacWithSecret() throws EncodingException {
         final String hmacAlgorithm = "HmacSHA256";
         try {
             Mac hmacSha256 = Mac.getInstance(hmacAlgorithm);
             hmacSha256.init(new SecretKeySpec(secret.getBytes(),hmacAlgorithm));
             return hmacSha256;
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new ModelException("Cannot create JWT signature", e);
+            throw new EncodingException("Cannot create JWT signature", e);
         }
     }
 
     /** @return jwt String with header, payload and signature Base64 url safe encoded. Signed using HmacSHA256 */
-    public String generateJWT() throws ModelException {
-        if (null == jti || jti == 0) throw new ModelException(
+    public String generateJWT() throws EncodingException {
+        if (null == jti || jti == 0) throw new EncodingException(
                 "Cannot generate Jwt string without jti, persist Jwt to retrieve jti");
-        if (null == secret || secret.isEmpty()) throw new ModelException(
+        if (null == secret || secret.isEmpty()) throw new EncodingException(
                 "Cannot generate Jwt string without secret");
 
         final StringBuilder builder = new StringBuilder();

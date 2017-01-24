@@ -2,14 +2,14 @@ package se.teknikhogskolan.springcasemanagement.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import se.teknikhogskolan.springcasemanagement.model.SecurityUser;
+import se.teknikhogskolan.springcasemanagement.model.SecureUser;
 
-public interface SecurityUserRepository extends CrudRepository<SecurityUser, Long> {
+public interface SecurityUserRepository extends CrudRepository<SecureUser, Long> {
 
     @SuppressWarnings("JpaQlInspection")
     @Query("select u from SecurityUser u where KEY(u.tokensExpiration) = ?1")
-    SecurityUser findByToken(String token);
+    SecureUser findByToken(String token);
 
-    SecurityUser findByUsername(String username);
+    SecureUser findByUsername(String username);
 
 }

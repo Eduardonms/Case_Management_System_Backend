@@ -1,18 +1,12 @@
 package se.teknikhogskolan.springcasemanagement.repository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.repository.CrudRepository;
 import se.teknikhogskolan.springcasemanagement.model.Jwt;
-import se.teknikhogskolan.springcasemanagement.model.Team;
-import se.teknikhogskolan.springcasemanagement.model.exception.ModelException;
+import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,7 +18,7 @@ public final class TestJwtRepository {
     private final String projectPackage = "se.teknikhogskolan.springcasemanagement";
 
     @Test
-    public void canGenerateJwtString() throws ModelException {
+    public void canGenerateJwtString() throws EncodingException {
         LocalDateTime now = LocalDateTime.now();
         Jwt jwt = new Jwt("This test", "userId", "username", "token", now, now.plusDays(1L));
         execute(repository -> repository.save(jwt));
