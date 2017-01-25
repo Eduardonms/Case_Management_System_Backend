@@ -34,6 +34,14 @@ import static org.junit.Assert.assertTrue;
 public class MiscTests {
 
     @Test
+    public void stringIsImmutable() {
+        final String hello = "hello world";
+        hello.substring(0, 5);
+        System.out.println(hello);
+//        hello = ""; // cant even compile
+    }
+
+    @Test
     public void howToReadPayLoad() {
         String jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOiIxNDg1MzM3NTIwIiwidXNlcm5hbWUiOiJCYXRtYW4ifQ==.3XuAppCeVYhIqO9hVy0FsF44Gqk3YxxHrsRibaIRnW0=";
         String[] parts = jwt.split("\\.");

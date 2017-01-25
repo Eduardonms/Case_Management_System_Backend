@@ -1,4 +1,4 @@
-package se.teknikhogskolan.springcasemanagement.model;
+package se.teknikhogskolan.springcasemanagement.security;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +21,6 @@ public final class JwtBuilder {
 
     private final String typ = "JWT";
     private final String alg = "HS256";
-    private final String secret = "jwt_key";
 
     private HashMap<String, String> claims = new HashMap<>();
 
@@ -79,45 +78,13 @@ public final class JwtBuilder {
     private final Mac createHmacWithSecret() throws EncodingException {
         final String hmacAlgorithm = "HmacSHA256";
         try {
-
             Mac hmacSha256 = Mac.getInstance(hmacAlgorithm);
-            hmacSha256.init(new SecretKeySpec(getSecret().getBytes(),hmacAlgorithm));
+            ConfigurationReader configurationReader = new ConfigurationReader();
+            hmacSha256.init(new SecretKeySpec(configurationReader.getSecret().getBytes(),hmacAlgorithm));
             return hmacSha256;
 
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
             throw new EncodingException("Cannot create JWT signature", e);
         }
-    }
-
-    private final String getSecret() throws EncodingException {
-
-        final Properties properties = new Properties();
-        final File file = new File(System.getProperty("user.home") + "/spring-case-management.properties");
-        try {
-            properties.load(new FileInputStream(file));
-        } catch (IOException e) {
-            throw new EncodingException(String.format("Cannot retrieve secret Jwt key, file missing '%s'", file));
-        }
-
-        if (null == properties.getProperty(secret)) {
-            properties.put(secret, generateToken(255));
-            try {
-                properties.store(new FileOutputStream(file), null);
-            } catch (IOException e) {
-                throw new EncodingException("Cannot create secret Jwt key.", e);
-            }
-        }
-
-        return properties.getProperty(secret);
-    }
-
-    private final String generateToken(int length) {
-        final StringBuilder builder = new StringBuilder();
-        final SecureRandom random = new SecureRandom();
-        final String characters = "0123456789abcdfghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
-        for (int i = 0; i < length; i++) {
-            builder.append(characters.charAt(random.nextInt(characters.length())));
-        }
-        return builder.toString();
     }
 }

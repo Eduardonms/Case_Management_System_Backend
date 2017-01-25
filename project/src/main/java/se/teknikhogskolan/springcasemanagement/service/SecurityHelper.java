@@ -1,21 +1,11 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Properties;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
 import se.teknikhogskolan.springcasemanagement.service.exception.HashingException;
 
 public final class SecurityHelper {

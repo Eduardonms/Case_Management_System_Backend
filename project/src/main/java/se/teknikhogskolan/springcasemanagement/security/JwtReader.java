@@ -1,4 +1,4 @@
-package se.teknikhogskolan.springcasemanagement.model;
+package se.teknikhogskolan.springcasemanagement.security;
 
 import java.time.Instant;
 import java.util.Base64;

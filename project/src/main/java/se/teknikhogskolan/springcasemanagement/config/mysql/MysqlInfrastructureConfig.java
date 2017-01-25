@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import se.teknikhogskolan.springcasemanagement.auditing.IssueAuditorAware;
 import se.teknikhogskolan.springcasemanagement.config.JpaConfig;
+import se.teknikhogskolan.springcasemanagement.security.ConfigurationReader;
 
 @Configuration
 @EnableJpaRepositories("se.teknikhogskolan.springcasemanagement.repository")
@@ -38,13 +39,12 @@ public class MysqlInfrastructureConfig extends JpaConfig {
     public DataSource dataSource() throws IOException {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("com.mysql.jdbc.Driver");
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/casemanagement");
 
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(System.getProperty("user.home") + "/spring-case-management.properties"));
+        ConfigurationReader configurationReader = new ConfigurationReader();
+        config.setJdbcUrl(configurationReader.getJdbcUrl());
+        config.setUsername(configurationReader.getUsername());
+        config.setPassword(configurationReader.getPassword());
 
-        config.setUsername(properties.getProperty("mysql_username"));
-        config.setPassword(properties.getProperty("mysql_password"));
         return new HikariDataSource(config);
     }
 
