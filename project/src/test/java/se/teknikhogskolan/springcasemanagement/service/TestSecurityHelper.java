@@ -4,10 +4,12 @@ import java.security.KeyStoreException;
 import org.junit.Test;
 import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
 
+import static junit.framework.TestCase.fail;
+
 public class TestSecurityHelper {
 
     @Test
-    public void readJwtSecretFromFile() throws EncodingException, KeyStoreException {
-        System.out.println(SecurityHelper.getSecret());
+    public void securityHelper() throws EncodingException, KeyStoreException {
+        fail("not implemented");
     }
 }

@@ -1,10 +1,16 @@
 package se.teknikhogskolan.springcasemanagement.model;
 
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.json.JSONObject;
@@ -15,8 +21,8 @@ public final class JwtBuilder {
 
     private final String typ = "JWT";
     private final String alg = "HS256";
+    private final String secret = "jwt_key";
 
-    private String secret;
     private HashMap<String, String> claims = new HashMap<>();
 
     public JwtBuilder() {}
@@ -24,6 +30,24 @@ public final class JwtBuilder {
     public JwtBuilder putClaim(String claim, String value) {
         claims.put(claim, value);
         return this;
+    }
+
+    public JwtBuilder putClaims(Map<String, String> claims) {
+        this.claims.putAll(claims);
+        return this;
+    }
+
+    /** @return jwt String with header, payload and signature Base64 url safe encoded. Signed using HmacSHA256 */
+    public String build() throws EncodingException {
+
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(getEncodedHeader());
+        builder.append(".");
+        builder.append(getEncodedPayload());
+        builder.append(".");
+        builder.append(getSignature());
+        return builder.toString();
     }
 
     private String getEncodedHeader() {
@@ -49,17 +73,15 @@ public final class JwtBuilder {
         builder.append(getEncodedHeader());
         builder.append(".");
         builder.append(getEncodedPayload());
-
         return Base64.getUrlEncoder().encodeToString(hmacSha256.doFinal(builder.toString().getBytes()));
     }
 
-    private Mac createHmacWithSecret() throws EncodingException {
-
+    private final Mac createHmacWithSecret() throws EncodingException {
         final String hmacAlgorithm = "HmacSHA256";
         try {
 
             Mac hmacSha256 = Mac.getInstance(hmacAlgorithm);
-            hmacSha256.init(new SecretKeySpec(secret.getBytes(),hmacAlgorithm));
+            hmacSha256.init(new SecretKeySpec(getSecret().getBytes(),hmacAlgorithm));
             return hmacSha256;
 
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
@@ -67,18 +89,35 @@ public final class JwtBuilder {
         }
     }
 
-    /** @return jwt String with header, payload and signature Base64 url safe encoded. Signed using HmacSHA256 */
-    public String build(String secret) throws EncodingException {
+    private final String getSecret() throws EncodingException {
 
-        if (null == secret || secret.isEmpty()) throw new IllegalArgumentException("Secret must have value");
-        this.secret = secret;
+        final Properties properties = new Properties();
+        final File file = new File(System.getProperty("user.home") + "/spring-case-management.properties");
+        try {
+            properties.load(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new EncodingException(String.format("Cannot retrieve secret Jwt key, file missing '%s'", file));
+        }
 
+        if (null == properties.getProperty(secret)) {
+            properties.put(secret, generateToken(255));
+            try {
+                properties.store(new FileOutputStream(file), null);
+            } catch (IOException e) {
+                throw new EncodingException("Cannot create secret Jwt key.", e);
+            }
+        }
+
+        return properties.getProperty(secret);
+    }
+
+    private final String generateToken(int length) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(getEncodedHeader());
-        builder.append(".");
-        builder.append(getEncodedPayload());
-        builder.append(".");
-        builder.append(getSignature());
+        final SecureRandom random = new SecureRandom();
+        final String characters = "0123456789abcdfghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
+        for (int i = 0; i < length; i++) {
+            builder.append(characters.charAt(random.nextInt(characters.length())));
+        }
         return builder.toString();
     }
 }

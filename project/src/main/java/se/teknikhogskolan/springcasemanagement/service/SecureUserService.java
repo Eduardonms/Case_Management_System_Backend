@@ -2,9 +2,6 @@ package se.teknikhogskolan.springcasemanagement.service;
 
 import java.security.KeyStoreException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.HashMap;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +13,6 @@ import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedEx
 import se.teknikhogskolan.springcasemanagement.service.exception.NotFoundException;
 
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.generateSalt;
-import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.getSecret;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.hashPassword;
 import static se.teknikhogskolan.springcasemanagement.service.SecurityHelper.hashingIterations;
 
@@ -58,13 +54,11 @@ public class SecureUserService {
 
         if (passwordMatchesUser(password, user)) {
 
-            String secret = getSecret();
-
             JwtBuilder jwtBuilder = new JwtBuilder();
             jwtBuilder.putClaim("username", username);
             jwtBuilder.putClaim("exp", String.valueOf(getCurrentUnixTime() + (60)));
 
-            return jwtBuilder.build(secret);
+            return jwtBuilder.build();
 
         } else throw new NotAuthorizedException("Wrong password");
 

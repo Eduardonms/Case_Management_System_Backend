@@ -11,7 +11,7 @@ public class TestJwtBuilder {
         jwtBuilder.putClaim("iss", "Me, the tester");
         jwtBuilder.putClaim("username", "Username_1");
         jwtBuilder.putClaim("exp", "65466161631561");
-        String jwt = jwtBuilder.build("secret");
+        String jwt = jwtBuilder.build();
         System.out.println(jwt);
     }
 }

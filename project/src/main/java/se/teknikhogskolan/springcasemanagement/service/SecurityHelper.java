@@ -1,6 +1,9 @@
 package se.teknikhogskolan.springcasemanagement.service;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -20,20 +23,9 @@ public final class SecurityHelper {
     public static final int hashingIterations = 10000;
     public static final int hashSize = 2048;
 
-    public static final String getSecret() throws KeyStoreException, EncodingException {
-        final String file = System.getProperty("user.home") + "/spring-case-management.properties";
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream(file));
-        } catch (IOException e) {
-            throw new EncodingException(String.format("Cannot find '%s'", file));
-        }
-        return properties.getProperty("jwt_key");
-    }
-
     public static final String generateToken(int length) {
-        StringBuilder builder = new StringBuilder();
-        SecureRandom random = new SecureRandom();
+        final StringBuilder builder = new StringBuilder();
+        final SecureRandom random = new SecureRandom();
         final String characters = "0123456789abcdfghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
         for (int i = 0; i < length; i++) {
             builder.append(characters.charAt(random.nextInt(characters.length())));
