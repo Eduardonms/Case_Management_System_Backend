@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Properties;
 
-public final class ConfigurationReader {
+public final class LocalConfigurations {
 
     private final String secret = "jwt_key";
     private final File configFile = new File(System.getProperty("user.home") + "/spring-case-management.properties");

@@ -1,9 +1,6 @@
 package se.teknikhogskolan.springcasemanagement.config.mysql;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Properties;
 import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -21,7 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import se.teknikhogskolan.springcasemanagement.auditing.IssueAuditorAware;
 import se.teknikhogskolan.springcasemanagement.config.JpaConfig;
-import se.teknikhogskolan.springcasemanagement.security.ConfigurationReader;
+import se.teknikhogskolan.springcasemanagement.security.LocalConfigurations;
 
 @Configuration
 @EnableJpaRepositories("se.teknikhogskolan.springcasemanagement.repository")
@@ -40,10 +37,10 @@ public class MysqlInfrastructureConfig extends JpaConfig {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("com.mysql.jdbc.Driver");
 
-        ConfigurationReader configurationReader = new ConfigurationReader();
-        config.setJdbcUrl(configurationReader.getJdbcUrl());
-        config.setUsername(configurationReader.getUsername());
-        config.setPassword(configurationReader.getPassword());
+        LocalConfigurations localConfigurations = new LocalConfigurations();
+        config.setJdbcUrl(localConfigurations.getJdbcUrl());
+        config.setUsername(localConfigurations.getUsername());
+        config.setPassword(localConfigurations.getPassword());
 
         return new HikariDataSource(config);
     }

@@ -74,8 +74,8 @@ public final class JwtBuilder {
         final String hmacAlgorithm = "HmacSHA256";
         try {
             Mac hmacSha256 = Mac.getInstance(hmacAlgorithm);
-            ConfigurationReader configurationReader = new ConfigurationReader();
-            hmacSha256.init(new SecretKeySpec(configurationReader.getSecret().getBytes(),hmacAlgorithm));
+            LocalConfigurations localConfigurations = new LocalConfigurations();
+            hmacSha256.init(new SecretKeySpec(localConfigurations.getSecret().getBytes(),hmacAlgorithm));
             return hmacSha256;
 
         } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
