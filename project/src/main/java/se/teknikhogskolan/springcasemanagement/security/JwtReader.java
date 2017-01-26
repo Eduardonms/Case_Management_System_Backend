@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
-import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
+import se.teknikhogskolan.springcasemanagement.security.exception.EncodingException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 
 public final class JwtReader {

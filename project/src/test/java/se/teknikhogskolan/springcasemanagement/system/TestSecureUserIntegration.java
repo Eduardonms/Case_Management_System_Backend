@@ -1,7 +1,6 @@
 package se.teknikhogskolan.springcasemanagement.system;
 
 import java.security.KeyStoreException;
-import java.time.LocalDateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,9 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import se.teknikhogskolan.springcasemanagement.config.h2.H2InfrastructureConfig;
-import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
+import se.teknikhogskolan.springcasemanagement.security.exception.EncodingException;
 import se.teknikhogskolan.springcasemanagement.service.SecureUserService;
-import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;

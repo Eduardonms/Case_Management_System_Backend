@@ -6,9 +6,7 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
-import se.teknikhogskolan.springcasemanagement.security.JwtBuilder;
-import se.teknikhogskolan.springcasemanagement.security.JwtReader;
+import se.teknikhogskolan.springcasemanagement.security.exception.EncodingException;
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 
 import static org.junit.Assert.assertEquals;

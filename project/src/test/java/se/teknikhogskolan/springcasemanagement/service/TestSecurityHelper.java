@@ -2,7 +2,7 @@ package se.teknikhogskolan.springcasemanagement.service;
 
 import java.security.KeyStoreException;
 import org.junit.Test;
-import se.teknikhogskolan.springcasemanagement.model.exception.EncodingException;
+import se.teknikhogskolan.springcasemanagement.security.exception.EncodingException;
 
 import static junit.framework.TestCase.fail;
 
