@@ -9,12 +9,6 @@ import java.util.Properties;
 
 public final class ConfigurationReader {
 
-    // TODO preventing deep copy prevents getting user dir path
-    static {
-        // prevent "deep copying" configFile path and config names
-        System.setSecurityManager(new OurSecurityManager());
-    }
-
     private final String secret = "jwt_key";
     private final File configFile = new File(System.getProperty("user.home") + "/spring-case-management.properties");
 
@@ -37,7 +31,7 @@ public final class ConfigurationReader {
     }
 
     public final String getSecret() throws IOException {
-
+        System.out.println("CONFIG FILE: " + configFile);
         Properties properties = new Properties();
 
         properties.load(new FileInputStream(configFile));

@@ -34,6 +34,11 @@ import static org.junit.Assert.assertTrue;
 public class MiscTests {
 
     @Test
+    public void getPathToConfigFile() {
+        System.out.println(System.getProperty("user.home") + "/spring-case-management.properties");
+    }
+
+    @Test
     public void stringIsImmutable() {
         final String hello = "hello world";
         hello.substring(0, 5);
