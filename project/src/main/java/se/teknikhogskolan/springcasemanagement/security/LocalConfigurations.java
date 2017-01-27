@@ -31,7 +31,6 @@ public final class LocalConfigurations {
     }
 
     public final String getSecret() throws IOException {
-        System.out.println("CONFIG FILE: " + configFile);
         Properties properties = new Properties();
 
         properties.load(new FileInputStream(configFile));
