@@ -10,8 +10,13 @@ import se.teknikhogskolan.springcasemanagement.security.exception.EncodingExcept
 import se.teknikhogskolan.springcasemanagement.service.exception.NotAuthorizedException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestJwtReader {
+    private final JwtReader reader = new JwtReader();
+
+    private final String validJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJNZSwgdGhlIHRlc3RlciIsImV4cCI6IjY1NDY2MTYxNjMxNTYxIiwidXNlcm5hbWUiOiJVc2VybmFtZV8xIn0=.uhUX0mK5H6FJ_plDfC-r-1Ffe5Qj60SlFfjwJPyRIFg=";
     private final String expiredJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOiIxNDg1MzQwMzk2IiwidXNlcm5hbWUiOiJCYXRtYW4ifQ==.4Soa4TW2DDgb7Y_aLhxikFYYT3yjx7pzhdJAhTYDLaM=";
     private final String jwtWithCorruptPayload = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAOiIxNDg1MzQwMzk2IiwidXNlcm5hbWUiOiJCYXRtYW4ifQ==.4Soa4TW2DDgb7Y_aLhxikFYYT3yjx7pzhdJAhTYDLaM=";
     private final String jwtWithCorruptHeader = "eyJ0eXAiOiJKV1QLCJhbGciOiJIUzI1NiJ9.eyJleHAiOiIxNDg1MzQwMzk2IiwidXNlcm5hbWUiOiJCYXRtYW4ifQ==.4Soa4TW2DDgb7Y_aLhxikFYYT3yjx7pzhdJAhTYDLaM=";
@@ -21,10 +26,19 @@ public class TestJwtReader {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
+    public void canValidateJwt() {
+        assertTrue(reader.isValid(validJwt));
+
+        assertFalse(reader.isValid(expiredJwt));
+        assertFalse(reader.isValid(jwtWithCorruptHeader));
+        assertFalse(reader.isValid(jwtWithCorruptPayload));
+        assertFalse(reader.isValid(jwtWithFalseSignature));
+    }
+
+    @Test
     public void readingJwtWithFakeSignatureShouldThrowException() throws EncodingException {
         exception.expect(NotAuthorizedException.class);
         exception.expectMessage("Bad Jwt signature");
-        JwtReader reader = new JwtReader();
         Map<String, String> claims = reader.readClaims(jwtWithFalseSignature);
         System.out.println(claims);
     }
@@ -33,7 +47,6 @@ public class TestJwtReader {
     public void readingExpiredJwtShouldThrowException() throws EncodingException {
         exception.expect(NotAuthorizedException.class);
         exception.expectMessage("Jwt expired");
-        JwtReader reader = new JwtReader();
         reader.readClaims(expiredJwt);
     }
 
@@ -41,7 +54,6 @@ public class TestJwtReader {
     public void readingJwtCorruptHeaderShouldThrowException() throws EncodingException {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Corrupt Jwt");
-        JwtReader reader = new JwtReader();
         Map<String, String> claims = reader.readClaims(jwtWithCorruptHeader);
     }
 
@@ -49,7 +61,6 @@ public class TestJwtReader {
     public void readingJwtCorruptPayloadShouldThrowException() throws EncodingException {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Corrupt Jwt");
-        JwtReader reader = new JwtReader();
         Map<String, String> claims = reader.readClaims(jwtWithCorruptPayload);
     }
 
@@ -66,7 +77,6 @@ public class TestJwtReader {
             builder.putClaims(originalClaims);
             String jwt = builder.build();
 
-            JwtReader reader = new JwtReader();
             Map<String, String> resultingClaims = reader.readClaims(jwt);
 
             assertEquals(originalClaims, resultingClaims);

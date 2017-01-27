@@ -89,4 +89,8 @@ public final class JwtReader {
         }
         return map;
     }
+
+    public boolean isValid(String jwt) {
+        return !isBroken(jwt) && !isExpired(jwt) && isCorrectSigned(jwt);
+    }
 }

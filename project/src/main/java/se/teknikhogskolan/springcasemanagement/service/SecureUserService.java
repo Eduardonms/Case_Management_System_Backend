@@ -93,4 +93,10 @@ public class SecureUserService {
             return user.getId();
         } else throw new NotAuthorizedException("Wrong password");
     }
+
+    public boolean isValid(String username, String password) {
+        SecureUser user = repository.findByUsername(username);
+        if (null == user) return false;
+        return passwordMatchesUser(password, user);
+    }
 }
