@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 @Entity
 public class SecureUser {
@@ -13,15 +14,16 @@ public class SecureUser {
     private Long id;
     @Column(nullable = false, unique = true)
     private String username;
-    private boolean admin = false;
-
-    private String hashedPassword = "";
-    private String salt = "";
+    @Lob
+    private byte[] hashedPassword = new byte[0];
+    @Lob
+    private byte[] salt = new byte[0];
     private int saltingIterations = 0;
+    private boolean admin = false;
 
     protected SecureUser() { /* used by JPA */ }
 
-    public SecureUser(String username, String hashedPassword, String salt, int saltingIterations) {
+    public SecureUser(String username, byte[] hashedPassword, byte[] salt, int saltingIterations) {
         if (null == username) throw new IllegalArgumentException("Username must not be null");
         this.username = username;
         this.hashedPassword = hashedPassword;
@@ -34,12 +36,12 @@ public class SecureUser {
         return this;
     }
 
-    public SecureUser setHashedPassword(String hashedPassword) {
+    public SecureUser setHashedPassword(byte[] hashedPassword) {
         this.hashedPassword = hashedPassword;
         return this;
     }
 
-    public SecureUser setSalt(String salt) {
+    public SecureUser setSalt(byte[] salt) {
         this.salt = salt;
         return this;
     }
@@ -88,11 +90,11 @@ public class SecureUser {
         return username;
     }
 
-    public String getHashedPassword() { // TODO check mutable
+    public byte[] getHashedPassword() { // TODO check mutable
         return hashedPassword;
     }
 
-    public String getSalt() {
+    public byte[] getSalt() {
         return salt;
     }
 

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import se.teknikhogskolan.springcasemanagement.config.h2.H2InfrastructureConfig;
+import se.teknikhogskolan.springcasemanagement.config.hsql.HsqlInfrastructureConfig;
 import se.teknikhogskolan.springcasemanagement.security.exception.EncodingException;
 import se.teknikhogskolan.springcasemanagement.service.SecureUserService;
 
@@ -20,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { H2InfrastructureConfig.class })
+@ContextConfiguration(classes = {H2InfrastructureConfig.class})
 public class TestSecureUserIntegration {
 
     private String username = "Batman";

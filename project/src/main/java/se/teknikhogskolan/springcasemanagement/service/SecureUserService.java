@@ -33,8 +33,8 @@ public class SecureUserService {
         if (usernameIsTaken(username)) throw new IllegalArgumentException(String.format(
                 "Username '%s' already exist", username));
 
-        String salt = generateSalt();
-        String hashedPassword = hashPassword(password, salt);
+        byte[] salt = generateSalt();
+        byte[] hashedPassword = hashPassword(password.toCharArray(), salt);
 
         SecureUser user = repository.save(new SecureUser(username, hashedPassword, salt, hashingIterations));
 
@@ -84,8 +84,8 @@ public class SecureUserService {
         return Instant.now().getEpochSecond();
     }
 
-    private boolean equalPasswords(String password, String salt, String hashedPassword) {
-        return hashedPassword.equals(hashPassword(password, salt));
+    private boolean equalPasswords(String password, byte[] salt, byte[] hashedPassword) {
+        return new String(hashedPassword).equals(new String(hashPassword(password.toCharArray(), salt)));
     }
 
     public Long delete(String username, String password) {
