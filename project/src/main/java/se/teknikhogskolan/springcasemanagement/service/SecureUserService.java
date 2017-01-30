@@ -49,8 +49,9 @@ public class SecureUserService {
         return !repository.exists(username);
     }
 
+    @Deprecated
+    /** @deprecated use JwtBuilder and JwtReader instead */
     public String createJwtFor(String username, String password) throws KeyStoreException, EncodingException {
-
         if (passwordMatchesUser(password, username)) {
 
             JwtBuilder jwtBuilder = new JwtBuilder();
