@@ -26,6 +26,13 @@ public class TestJwtReader {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
+    public void jwtReadingBug() {
+        final String jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyZWZyZXNoIiwiZXhwIjoiMTQ4NjI4NjA2NiIsInVzZXJuYW1lIjoicm9vdDEzIn0=.lF3MxU0ddYB_QvqwCao_3i9DYZvKjqokbAArdBj4dR8=";
+        Map<String, String> result = reader.readClaims(jwt);
+        System.out.println("result: " + result);
+    }
+
+    @Test
     public void canValidateJwt() {
         assertTrue(reader.isValid(validJwt));
 

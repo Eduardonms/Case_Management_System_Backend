@@ -15,8 +15,6 @@ public class SecureUser {
     private String username;
     private boolean admin = false;
 
-    private String jwt = "";
-
     private String hashedPassword = "";
     private String salt = "";
     private int saltingIterations = 0;
@@ -53,11 +51,6 @@ public class SecureUser {
 
     public SecureUser setUsername(String username) {
         this.username = username;
-        return this;
-    }
-
-    public SecureUser setJwt(String jwt) {
-        this.jwt = jwt;
         return this;
     }
 
@@ -111,7 +104,4 @@ public class SecureUser {
         return admin;
     }
 
-    public String getJwt() {
-        return jwt;
-    }
 }
