@@ -15,12 +15,9 @@ import se.teknikhogskolan.springcasemanagement.security.exception.EncodingExcept
 import se.teknikhogskolan.springcasemanagement.service.SecureUserService;
 
 import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { H2InfrastructureConfig.class })
