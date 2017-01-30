@@ -51,9 +51,9 @@ public class TestSecureUserIntegration {
 
     @Test
     public void canValidateUsernameAndPassword() {
-        assertTrue(service.isValid(username, password));
-        assertFalse(service.isValid("fake user", password));
-        assertFalse(service.isValid(username, "fake password"));
+        assertTrue(service.passwordMatchesUser(password, username));
+        assertFalse(service.passwordMatchesUser("fake user", password));
+        assertFalse(service.passwordMatchesUser(username, "fake password"));
     }
 
     @Test

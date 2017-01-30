@@ -42,17 +42,16 @@ public class SecureUserService {
     }
 
     private boolean usernameIsTaken(String username) {
-        return !usernameIsAvailable(username);
+        return repository.exists(username);
     }
 
     public boolean usernameIsAvailable(String username) {
-        return null == repository.findByUsername(username);
+        return !repository.exists(username);
     }
 
     public String createJwtFor(String username, String password) throws KeyStoreException, EncodingException {
-        SecureUser user = getByUsername(username);
 
-        if (passwordMatchesUser(password, user)) {
+        if (passwordMatchesUser(password, username)) {
 
             JwtBuilder jwtBuilder = new JwtBuilder();
             jwtBuilder.putClaim("username", username);
@@ -64,10 +63,6 @@ public class SecureUserService {
 
     }
 
-    private Long getCurrentUnixTime() {
-        return Instant.now().getEpochSecond();
-    }
-
     private SecureUser getByUsername(String username) {
 
         Optional<SecureUser> user = Optional.ofNullable(repository.findByUsername(username));
@@ -76,10 +71,16 @@ public class SecureUserService {
         return user.get();
     }
 
-    private boolean passwordMatchesUser(String password, SecureUser user) {
+    public boolean passwordMatchesUser(String password, String username) {
+        SecureUser user = repository.findByUsername(username);
+        if (null == user) return false;
         if (equalPasswords(password, user.getSalt(), user.getHashedPassword())) {
             return true;
         } else return false;
+    }
+
+    private Long getCurrentUnixTime() {
+        return Instant.now().getEpochSecond();
     }
 
     private boolean equalPasswords(String password, String salt, String hashedPassword) {
@@ -88,15 +89,9 @@ public class SecureUserService {
 
     public Long delete(String username, String password) {
         SecureUser user = getByUsername(username);
-        if (passwordMatchesUser(password, user)) {
+        if (passwordMatchesUser(password, username)) {
             repository.delete(user.getId());
             return user.getId();
         } else throw new NotAuthorizedException("Wrong password");
-    }
-
-    public boolean isValid(String username, String password) {
-        SecureUser user = repository.findByUsername(username);
-        if (null == user) return false;
-        return passwordMatchesUser(password, user);
     }
 }
