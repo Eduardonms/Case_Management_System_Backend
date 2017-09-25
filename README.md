@@ -1,7 +1,7 @@
-# Case Management System made in Spring
+# Case Management System made in Spring with hashing, salting and custom JWT
 ## Published as REST API by our [Jaxson Project](https://github.com/peferb/jaxson/blob/master/README.md)
 
-####Made to demonstrate the following techniques:
+###Made to demonstrate the following techniques:
   + Security by Token based authentication ([this, master branch](https://github.com/peferb/springcasemanagement/blob/master/project/src/main/java/se/teknikhogskolan/springcasemanagement/service/SecurityUserService.java))
   + Security by JWT ([see jwt branch](https://github.com/peferb/springcasemanagement/tree/jwt/project/src/main/java/se/teknikhogskolan/springcasemanagement/security))
   + Hashing and Salting
